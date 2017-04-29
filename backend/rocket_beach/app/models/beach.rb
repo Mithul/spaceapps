@@ -7,20 +7,38 @@ class Beach < ApplicationRecord
 	end
 
 	def uv_index
-		appid = Figaro.env.openweather_appid
-		date = DateTime.now.in_time_zone("UTC").change({hour: 12, minute: 0, second: 0}).strftime('%Y-%m-%dT%H:%M:%SZ')
-		# http://api.openweathermap.org/v3/uvi/40.7,-74.2/2017-04-29T12:00:00Z.json?appid=b8bf2ecc18e7c20dc377279489063ac5
-		# http://api.openweathermap.org/v3/uvi/2.456,3.546/2017-04-29T12:00:00Z.json?appid=b8bf2ecc18e7c20dc377279489063ac5
-		# http://api.openweathermap.org/v3/uvi/1.345,6.543/2017-04-29T14:18:54+05:30.json?appid=
-		# 2016-01-02T15:04:05Z
-		# http://api.openweathermap.org/v3/uvi/{location}/{datetime}.json?appid={api_key}
-		url = "http://api.openweathermap.org/v3/uvi/#{self.latitude.round(1)},#{self.longitude.round(1)}/#{date}.json?appid=#{appid}"
-		require 'net/http'
-		require 'uri'
-		response = nil
-		json = JSON.parse(Net::HTTP.get(URI.parse(url)))
-		json[:message] = "found" if !json.include? "message"
-		return json
+		# Rails.logger.debug(cache_key)
+		Rails.cache.fetch("#{cache_key}/", expires_in: 10.minutes) do
+			appid = Figaro.env.openweather_appid
+			date = DateTime.now.in_time_zone("UTC").change({hour: 12, minute: 0, second: 0}).strftime('%Y-%m-%dT%H:%M:%SZ')
+			require 'net/http'
+			require 'uri'
+			t = []
+			
+			json_uv = nil
+			json_weather = nil
+			t << Thread.new {
+				url = "http://api.openweathermap.org/v3/uvi/#{self.latitude.round(1)},#{self.longitude.round(1)}/current.json?appid=#{appid}"
+				json_uv = JSON.parse(Net::HTTP.get(URI.parse(url))) 
+			}
+			# json[:message] = "found" if !json.include? "message"
+
+			# http://api.openweathermap.org/data/2.5/weather?lat=35&lon=139
+			t << Thread.new {
+				url = "http://api.openweathermap.org/data/2.5/weather?lat=#{self.latitude}&lon=#{self.longitude}&appid=#{appid}"
+				json_weather = JSON.parse(Net::HTTP.get(URI.parse(url)))
+			}
+
+			t.each{|thread| thread.join}
+
+			if json_uv["data"] and json_weather["clouds"]
+				val = json_uv["data"].to_f * (0.9889746039) ** (json_weather["clouds"]["all"].to_f/100)
+				uv = {status: true, value: val, raw: json_uv["data"].to_f, weather: json_weather}
+			else
+				uv = {status: false}
+			end
+			# return uv
+   		end
 	end
 
 	private
