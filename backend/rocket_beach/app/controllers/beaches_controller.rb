@@ -30,7 +30,7 @@ class BeachesController < ApplicationController
           init = false
           point = [params[:lat].to_f, params[:long].to_f]
           #Sort by distance for beaches < 10km away
-          @beaches = Beach.all.select{|b| b.distance < 10}
+          @beaches = Beach.all.select{|b| b.distance(point) < 1000}
         end
       end
       if params[:address]
@@ -42,16 +42,18 @@ class BeachesController < ApplicationController
     rescue => error
       init = false
       @beaches = []
-      flash[:error] = error
+      message = error.to_s
+      flash[:error] = message
       respond_to do |format|
         format.html {render 'index', :status => 500  }
         format.json {render :json => {status: :error, message: message}, :status => 500 }
       end
     end
+    @point = point
     if !performed?
       Rails.logger.debug("DEFAULT")
       @beaches = Beach.all if init
-      @beaches = @beaches.sort_by{|b| b.distance}
+      @beaches = @beaches.sort_by{|b| b.distance(point)} if !point.nil?
       render 'index'
     end
   end
