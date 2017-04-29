@@ -10,7 +10,7 @@ class SessionsController < Devise::SessionsController
     if resource.valid_password?(params[:user_login][:password])
       sign_in(:user, resource)
       resource.ensure_authentication_token!
-      render :json=> {:auth_token=>resource.authentication_token, :email=>resource.email}, :status => :ok
+      render :json=> {:auth_token=>resource.auth_token, :email=>resource.email}, :status => :ok
       return
     end
     invalid_login_attempt
