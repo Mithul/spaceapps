@@ -54,7 +54,7 @@ class BeachesController < ApplicationController
       Rails.logger.debug("DEFAULT")
       @beaches = Beach.all if init
       @beaches = @beaches.sort_by{|b| b.distance(point)} if !point.nil?
-      @beaches = @beaches.first(10)
+      @beaches = Kaminari.paginate_array(@beaches).page(params[:page]).per(10)
       render 'index'
     end
   end
