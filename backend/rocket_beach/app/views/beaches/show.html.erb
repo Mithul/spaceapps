@@ -1,0 +1,24 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Name:</strong>
+  <%= @beach.name %>
+</p>
+
+<p>
+  <strong>Latitude:</strong>
+  <%= @beach.latitude %>
+</p>
+
+<p>
+  <strong>Longitude:</strong>
+  <%= @beach.longitude %>
+</p>
+
+<p>
+  <strong>Address:</strong>
+  <%= @beach.address %>
+</p>
+
+<%= link_to 'Edit', edit_beach_path(@beach) %> |
+<%= link_to 'Back', beaches_path %>

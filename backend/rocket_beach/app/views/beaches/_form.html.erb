@@ -1,0 +1,20 @@
+<%= simple_form_for(beach) do |f| %>
+  <% if beach.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(beach.errors.count, "error") %> prohibited this beach from being saved:</h2>
+
+      <ul>
+      <% beach.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+    <%= f.input :name, input_html: {class: 'form-control'} %>
+    <%= f.input :latitude, input_html: {class: 'form-control'} %>
+    <%= f.input :longitude, input_html: {class: 'form-control'} %>
+    <%= f.input :address, input_html: {class: 'form-control'} %>
+    <%= f.submit %>
+
+<% end %>
