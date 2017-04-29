@@ -8,7 +8,7 @@ class Beach < ApplicationRecord
 
 	def uv_index
 		# Rails.logger.debug(cache_key)
-		Rails.cache.fetch("#{cache_key}/", expires_in: 10.minutes) do
+		Rails.cache.fetch("#{cache_key}/", expires_in: 2.hours) do
 			appid = Figaro.env.openweather_appid
 			date = DateTime.now.in_time_zone("UTC").change({hour: 12, minute: 0, second: 0}).strftime('%Y-%m-%dT%H:%M:%SZ')
 			require 'net/http'
@@ -30,6 +30,7 @@ class Beach < ApplicationRecord
 			}
 
 			t.each{|thread| thread.join}
+Rails.logger.debug([json_uv, json_weather])
 
 			if json_uv["data"] and json_weather["clouds"]
 				val = json_uv["data"].to_f * (0.9889746039) ** (json_weather["clouds"]["all"].to_f/100)
