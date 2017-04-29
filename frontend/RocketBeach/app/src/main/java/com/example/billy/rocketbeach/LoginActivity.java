@@ -3,6 +3,8 @@ package com.example.billy.rocketbeach;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -12,43 +14,38 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.util.Locale;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
-
     private RocketBeach rocket;
+
     // UI references.
-    private AutoCompleteTextView mEmailView;
+    private EditText mEmailView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://81.4.105.95:3000/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+        preferences = getSharedPreferences("RocketBeach", 0);
 
-        rocket = retrofit.create(RocketBeach.class);
+        rocket = Utils.getService();
         // Set up the login form.
-        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
+        mEmailView = (EditText) findViewById(R.id.email);
 
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -70,6 +67,15 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        Button mEmailSignUpButton = (Button) findViewById(R.id.email_sign_up);
+        mEmailSignUpButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                attemptSignup();
+            }
+        });
+
+
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
     }
@@ -79,15 +85,14 @@ public class LoginActivity extends AppCompatActivity {
         mEmailView.setError(null);
         mPasswordView.setError(null);
 
-        // Store values at the time of the login attempt.
-        String email = mEmailView.getText().toString();
-        String password = mPasswordView.getText().toString();
+        final String email = mEmailView.getText().toString();
+        final String password = mPasswordView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+        if (TextUtils.isEmpty(password) || !isPasswordValid(password)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
@@ -105,40 +110,97 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         if (cancel) {
-            // There was an error; don't attempt login and focus the first
-            // form field with an error.
             focusView.requestFocus();
         } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
             showProgress(true);
-            rocket.addUser(email, password, password).enqueue(new Callback<Beachgoer>() {
+            rocket.loginUser(email, password).enqueue(new Callback<Beachgoer>() {
                 @Override
                 public void onResponse(Call<Beachgoer> call, Response<Beachgoer> response) {
-                    try {
-                        Log.d("TEST", response.code() + "");
-                        Beachgoer token = response.body();
-                        Log.d("TEST", token.auth_token);
+                    if (response.code() == 200 && response.body().message == null) {
                         showProgress(false);
-                    } catch (Exception e) {
-                        Log.d("TEST", e.getMessage());
+                        Beachgoer person = response.body();
+                        Utils.makeToken(preferences, "X-Auth-Token", person.auth_token);
+                        startActivity(new Intent(getApplicationContext(), TeamActivity.class));
                     }
                 }
 
                 @Override
                 public void onFailure(Call<Beachgoer> call, Throwable t) {
-                    Log.d("TEST", t.getMessage() + " ");
+                    showProgress(false);
+                    mEmailView.setError(String.format(Locale.ENGLISH, "Some problem occured %s", t.getMessage() + ""));
+                    mEmailView.requestFocus();
+
+                }
+            });
+
+        }
+    }
+
+    private void attemptSignup() {
+        // Reset errors.
+        mEmailView.setError(null);
+        mPasswordView.setError(null);
+
+        final String email = mEmailView.getText().toString();
+        final String password = mPasswordView.getText().toString();
+
+        boolean cancel = false;
+        View focusView = null;
+
+        // Check for a valid password, if the user entered one.
+        if (TextUtils.isEmpty(password) || !isPasswordValid(password)) {
+            mPasswordView.setError(getString(R.string.error_invalid_password));
+            focusView = mPasswordView;
+            cancel = true;
+        }
+
+        // Check for a valid email address.
+        if (TextUtils.isEmpty(email)) {
+            mEmailView.setError(getString(R.string.error_field_required));
+            focusView = mEmailView;
+            cancel = true;
+        } else if (!isEmailValid(email)) {
+            mEmailView.setError(getString(R.string.error_invalid_email));
+            focusView = mEmailView;
+            cancel = true;
+        }
+
+        if (cancel) {
+            focusView.requestFocus();
+        } else {
+            showProgress(true);
+            rocket.addUser(email, password, password).enqueue(new Callback<Beachgoer>() {
+                @Override
+                public void onResponse(Call<Beachgoer> call, Response<Beachgoer> response) {
+                    if (response.code() == 201) {
+                        Beachgoer token = response.body();
+                        Log.d("TEST", token.auth_token);
+                        Utils.makeToken(preferences, "X-Auth-Token", token.auth_token);
+                        startActivity(new Intent(getApplicationContext(), TeamActivity.class));
+                    } else {
+                        mEmailView.setError("Some problem occured");
+                        mEmailView.requestFocus();
+                    }
+                    showProgress(false);
+                }
+
+                @Override
+                public void onFailure(Call<Beachgoer> call, Throwable t) {
+                    showProgress(false);
+                    mEmailView.setError(String.format(Locale.ENGLISH, "Some problem occured %s", t.getMessage() + ""));
+                    mEmailView.requestFocus();
                 }
             });
         }
     }
+
 
     private boolean isEmailValid(String email) {
         return email.contains("@");
     }
 
     private boolean isPasswordValid(String password) {
-        return password.length() > 6;
+        return password.length() >= 6;
     }
 
     /**

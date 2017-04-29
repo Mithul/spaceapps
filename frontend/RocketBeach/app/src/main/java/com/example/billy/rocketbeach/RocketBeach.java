@@ -15,13 +15,14 @@ import retrofit2.http.POST;
 import retrofit2.http.QueryMap;
 
 interface RocketBeach {
-//    @Headers("Authorization: Token token=fbea86a136e44d649970fe2effc645b7")
     @GET("search/beaches.json")
     Call<List<Beach>> listBeaches(@QueryMap Map<String, String> queries, @Header("Authorization") String auth);
 
     @FormUrlEncoded
     @POST("users")
     Call<Beachgoer> addUser(@Field("user[email]") String email, @Field("user[password]") String pass, @Field("user[password_confirmation]") String confirm);
-}
 
-//Authorization: Token token=af1a4fd625374dffa4c7fbeab48ffff4
+    @FormUrlEncoded
+    @POST("users/sign_in")
+    Call<Beachgoer> loginUser(@Field("user_login[email]") String email, @Field("user_login[password]") String pass);
+}

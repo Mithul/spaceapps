@@ -1,8 +1,9 @@
 package com.example.billy.rocketbeach;
 
-public class Beachgoer {
+class Beachgoer {
     public Integer id;
     public String email;
-    public String auth_token;
+    String auth_token;
+    public String message;
 //    public String team;
 }
