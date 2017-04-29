@@ -7,6 +7,55 @@ class BeachesController < ApplicationController
     @beaches = Beach.all
   end
 
+  def search
+    @beaches = []
+    init = true
+    #Try catch to make more robus
+    begin
+      #If lat/long given
+      if params[:lat] or params[:long]
+        #If only one is given
+        Rails.logger.debug("LAT/LONG")
+        if !(params[:lat] and params[:long])
+          init = false
+          @beaches = []
+          message = "Please specify both lat and long"
+          flash[:error] = message
+          respond_to do |format|
+            format.html {render 'index', :status => 422  }
+            format.json {render :json => {status: :error, message: message}, :status => 422 }
+          end
+        #If both are given
+        else
+          init = false
+          point = [params[:lat].to_f, params[:long].to_f]
+          #Sort by distance for beaches < 10km away
+          @beaches = Beach.all.select{|b| b.distance < 10}
+        end
+      end
+      if params[:address]
+        init = false
+        Rails.logger.debug("ADDRESS")
+        Rails.logger.debug(@beaches.to_json)
+        @beaches = @beaches + Beach.all.select{|b| b.address.downcase.include? params[:address].downcase}
+      end
+    rescue => error
+      init = false
+      @beaches = []
+      flash[:error] = error
+      respond_to do |format|
+        format.html {render 'index', :status => 500  }
+        format.json {render :json => {status: :error, message: message}, :status => 500 }
+      end
+    end
+    if !performed?
+      Rails.logger.debug("DEFAULT")
+      @beaches = Beach.all if init
+      @beaches = @beaches.sort_by{|b| b.distance}
+      render 'index'
+    end
+  end
+
   # GET /beaches/1
   # GET /beaches/1.json
   def show
