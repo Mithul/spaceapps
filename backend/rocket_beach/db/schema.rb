@@ -10,13 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170429131512) do
+ActiveRecord::Schema.define(version: 20170429170854) do
 
   create_table "beaches", force: :cascade do |t|
     t.string   "name"
     t.decimal  "latitude"
     t.decimal  "longitude"
     t.text     "address"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer  "team_id"
+    t.decimal  "health"
+    t.index ["team_id"], name: "index_beaches_on_team_id"
+  end
+
+  create_table "teams", force: :cascade do |t|
+    t.string   "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -34,10 +43,14 @@ ActiveRecord::Schema.define(version: 20170429131512) do
     t.string   "last_sign_in_ip"
     t.datetime "created_at",                                     null: false
     t.datetime "updated_at",                                     null: false
+    t.integer  "team_id"
     t.string   "auth_token",             limit: 30
+    t.decimal  "health"
+    t.string   "name"
     t.index ["auth_token"], name: "index_users_on_auth_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["team_id"], name: "index_users_on_team_id"
   end
 
 end
