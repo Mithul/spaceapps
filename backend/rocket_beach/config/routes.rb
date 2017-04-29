@@ -13,6 +13,6 @@ Rails.application.routes.draw do
   get '/get_association' => 'teams#get_association', as: :get_association
   get '/associate/:id' => 'teams#associate', as: :associate
 
-  devise_for :users, :controllers => {:registrations => "registrations", sessions: "sessions"}
+  devise_for :users, :controllers => {:registrations => "registrations"}
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 end
