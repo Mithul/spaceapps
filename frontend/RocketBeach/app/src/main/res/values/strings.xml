@@ -14,4 +14,7 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="zeus_story">Zeus</string>
+    <string name="poseidon_story">PoseidonArch nemesis of Helios, Poseidon shall keep you safe in his warm waters</string>
+
 </resources>
