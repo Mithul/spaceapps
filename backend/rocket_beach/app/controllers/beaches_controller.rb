@@ -1,5 +1,6 @@
 class BeachesController < ApplicationController
   before_action :set_beach, only: [:show, :edit, :update, :destroy]
+  before_action :authenticate
 
   # GET /beaches
   # GET /beaches.json
@@ -113,6 +114,23 @@ class BeachesController < ApplicationController
     end
   end
 
+  protected
+
+  def authenticate
+    authenticate_token || render_unauthorized
+  end
+
+  def authenticate_token
+    authenticate_with_http_token do |token, options|
+      User.find_by(auth_token: token)
+    end
+  end
+
+  def render_unauthorized
+    self.headers['WWW-Authenticate'] = 'Token realm="Application"'
+    render json: 'Bad credentials', status: 401
+  end 
+	
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_beach
