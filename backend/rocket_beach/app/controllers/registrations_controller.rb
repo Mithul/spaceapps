@@ -1,4 +1,5 @@
 class RegistrationsController < Devise::RegistrationsController
+	# respond_to :json
   def new
     super
   end
@@ -20,4 +21,5 @@ class RegistrationsController < Devise::RegistrationsController
   def update
     super
   end
+
 end 

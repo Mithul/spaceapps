@@ -1,6 +1,6 @@
 class BeachesController < ApplicationController
   before_action :set_beach, only: [:show, :edit, :update, :destroy]
-  before_filter :authenticate
+  before_action :authenticate
 
   # before_filter :check_lat_long, only[:attack, :search]
 
@@ -145,9 +145,7 @@ class BeachesController < ApplicationController
   end
 
   def authenticate_token
-    authenticate_with_http_token do |token, options|
-      User.find_by(auth_token: token)
-    end
+    return current_user
   end
 
   def render_unauthorized
