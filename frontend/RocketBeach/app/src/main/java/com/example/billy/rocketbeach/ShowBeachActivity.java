@@ -154,56 +154,67 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         final Beach[] beach = {null};
         //TODO : Dynamic Beach id
         String beach_id = intentBeach.id + "";
-        rocket.getBeachInfo(beach_id, token).enqueue(new Callback<Beach>() {
-            @Override
-            public void onResponse(Call<Beach> call, Response<Beach> response) {
-                if (response.code() == 200) {
-                    beach[0] = response.body();
-                    beach[0].validate_team();
-                    beach_name.setText(beach[0].name);
-                    beach_health.setText(beach[0].health);
-                    String team_name = beach[0].team.name;
-                    beach_team.setText(beach[0].team.name);
-                    set_team_theme(team_name, team_image, frame_layout);
-                    uv_index.setText(String.valueOf(beach[0].uv_index.value));
-                    potential_xp.setText(String.valueOf(beach[0].potential_xp));
-                }
-            }
+        beach_name.setText(intentBeach.name);
+        beach_health.setText(intentBeach.health);
+        String team_name = intentBeach.team.name;
+        beach_team.setText(intentBeach.team.name);
+        set_team_theme(team_name, team_image, frame_layout);
+        uv_index.setText(String.valueOf(intentBeach.uv_index.value));
+        potential_xp.setText(String.valueOf(intentBeach.potential_xp));
 
-            @Override
-            public void onFailure(Call<Beach> call, Throwable t) {
-                Log.e("RocketBeach",t.toString());
-            }
-        });
+//        rocket.getBeachInfo(beach_id, token).enqueue(new Callback<Beach>() {
+//            @Override
+//            public void onResponse(Call<Beach> call, Response<Beach> response) {
+//                if (response.code() == 200) {
+//                    beach[0] = response.body();
+//                    beach[0].validate_team();
+//                    beach_name.setText(beach[0].name);
+//                    beach_health.setText(beach[0].health);
+//                    String team_name = beach[0].team.name;
+//                    beach_team.setText(beach[0].team.name);
+//                    set_team_theme(team_name, team_image, frame_layout);
+//                    uv_index.setText(String.valueOf(beach[0].uv_index.value));
+//                    potential_xp.setText(String.valueOf(beach[0].potential_xp));
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<Beach> call, Throwable t) {
+//                Log.e("RocketBeach",t.toString());
+//            }
+//        });
 
         findViewById(R.id.attack_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Map<String, String> options = new HashMap<>();
                 //TODO : remove hardcoded location
-                options.put("lat", "40.7");
-                options.put("long", "-74.2");
+                options.put("lat", "13.45");
+                options.put("long", "2.3");
                 String beach_id = intentBeach.id + "";
                 rocket.attack(beach_id, token, options).enqueue(new Callback<AttackResponse>() {
                     @Override
                     public void onResponse(Call<AttackResponse> call, Response<AttackResponse> response) {
                         if (response.code() == 200) {
-                            AttackResponse ar =response.body();
+                            AttackResponse ar = response.body();
                             ar.validate_team();
-                            Log.e("Attack", String.valueOf(ar.status));
-                            beach[0] = ar.beach;
-                            beach_name.setText(beach[0].name);
-                            beach_health.setText(beach[0].health);
-                            String team_name = ar.team.name;
-                            beach_team.setText(ar.team.name);
-                            set_team_theme(team_name, team_image, frame_layout);
+                            if (ar.status) {
+                                beach[0] = ar.beach;
+                                beach_name.setText(beach[0].name);
+                                beach_health.setText(beach[0].health);
+                                String team_name = ar.team.name;
+                                beach_team.setText(ar.team.name);
+                                set_team_theme(team_name, team_image, frame_layout);
+                            } else {
+                                Log.d("RocketBeach", "Cannot attack");
+                            }
 //                            uv_index.setText(String.valueOf(beach[0].uv_index.value));
                         }
                     }
 
                     @Override
                     public void onFailure(Call<AttackResponse> call, Throwable t) {
-                        Log.e("ShowBeach",t.toString());
+                        Log.e("RocketBeach",t.toString());
                     }
                 });
             }

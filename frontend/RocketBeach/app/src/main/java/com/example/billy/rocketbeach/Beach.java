@@ -18,11 +18,15 @@ class Beach {
     }
 
     public String[] flatten() {
+        validate_team();
         return new String[] {
                 id + "",
                 name,
                 latitude,
                 longitude,
+                team.name,
+                uv_index.value + "",
+                potential_xp
         };
     }
 
@@ -32,6 +36,11 @@ class Beach {
         b.name = values[1];
         b.latitude = values[2];
         b.longitude = values[3];
+        b.validate_team();
+        b.team.name = values[4];
+        b.uv_index = new UVResponse();
+        b.uv_index.value = Double.parseDouble(values[5]);
+        b.potential_xp = values[6];
 
         return b;
     }
