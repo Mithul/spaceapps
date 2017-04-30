@@ -6,6 +6,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.media.Image;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -30,7 +31,11 @@ import com.pushbots.push.Pushbots;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -44,7 +49,10 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
 
     private RocketBeach rocket;
     private GoogleApiClient googleApiClient;
+    private LocationManager locationManager;
     private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 1;
+    private static final int RC_LOCATION_CONTACTS_PERM = 124;
+    private double latitute, longitude;
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -128,6 +136,10 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         }
     }
 
+    private void show_warning(Float uv_index){
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -135,6 +147,8 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         setContentView(R.layout.activity_show_beach);
 
         mVisible = true;
+//        latitute = Float.parseFloat(null);
+//        longitude = Float.parseFloat(null);
         mControlsView = findViewById(R.id.fullscreen_content_controls);
         mContentView = findViewById(R.id.fullscreen_content);
 
@@ -155,8 +169,11 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         final TextView beach_team = (TextView)findViewById(R.id.beach_team);
         final TextView uv_index = (TextView)findViewById(R.id.uv_index);
         final TextView potential_xp = (TextView)findViewById(R.id.potential_xp);
+        final TextView user_health = (TextView)findViewById(R.id.player_health);
         final ImageView team_image = (ImageView) findViewById(R.id.team_image);
         final FrameLayout frame_layout = (FrameLayout) findViewById(R.id.show_beach_frame);
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        locationAndContactsTask();
 
         final Beach[] beach = {null};
         //TODO : Dynamic Beach id
@@ -172,6 +189,7 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
                     String team_name = beach[0].team.name;
                     beach_team.setText(beach[0].team.name);
                     set_team_theme(team_name, team_image, frame_layout);
+                    show_warning((float) beach[0].uv_index.value);
                     uv_index.setText(String.valueOf(beach[0].uv_index.value));
                     potential_xp.setText(String.valueOf(beach[0].potential_xp));
                 }
@@ -189,13 +207,30 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
 
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateUserHealth();
+                    }
+                });
+            }
+        },0,10000);
+
         findViewById(R.id.attack_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Map<String, String> options = new HashMap<>();
+                locationAndContactsTask();
                 //TODO : remove hardcoded location
-                options.put("lat", "40.7");
-                options.put("long", "-74.2");
+                Log.e("Location", String.valueOf(latitute));
+                Log.e("Location", String.valueOf(longitude));
+                latitute = 40.7;
+                longitude = -74.2;
+                options.put("lat", String.valueOf(latitute));
+                options.put("long", String.valueOf(longitude));
                 rocket.attack("1", token, options).enqueue(new Callback<AttackResponse>() {
                     @Override
                     public void onResponse(Call<AttackResponse> call, Response<AttackResponse> response) {
@@ -221,6 +256,54 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
             }
         });
         findViewById(R.id.attack_button).setOnTouchListener(mDelayHideTouchListener);
+    }
+
+    private void updateUserHealth(){
+        Map<String, String> options = new HashMap<>();
+        locationAndContactsTask();
+        final TextView user_health = (TextView)findViewById(R.id.player_health);
+        //TODO : remove hardcoded location
+        Log.e("Location", String.valueOf(latitute));
+        Log.e("Location", String.valueOf(longitude));
+        latitute = 40.7;
+        longitude = -74.2;
+        options.put("lat", String.valueOf(latitute));
+        options.put("long", String.valueOf(longitude));
+        final String token = getSharedPreferences("RocketBeach", 0).getString("X-Auth-Token", "7e977b10c81d4b7581a2a106b9fb84dc");
+        rocket.updateHealth(token, options).enqueue(new Callback<UpdateHealthResponse>() {
+            @Override
+            public void onResponse(Call<UpdateHealthResponse> call, Response<UpdateHealthResponse> response) {
+                UpdateHealthResponse uhr = response.body();
+                user_health.setText(uhr.health);
+                boolean alive = uhr.user_alive;
+                if (!alive)
+                    Toast.makeText(getApplicationContext(), "You are dead and can no longer conquer beaches", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onFailure(Call<UpdateHealthResponse> call, Throwable t) {
+                Log.e("ShowBeach", t.toString());
+            }
+        });
+    }
+
+    @AfterPermissionGranted(RC_LOCATION_CONTACTS_PERM)
+    public void locationAndContactsTask() throws SecurityException {
+        String[] perms = { Manifest.permission.ACCESS_FINE_LOCATION };
+        latitute = 0;
+        longitude = 0;
+        if (EasyPermissions.hasPermissions(this, perms)) {
+            // Have permissions, do the thing!
+            Location t = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (t == null) return;
+            latitute = t.getLatitude();
+            longitude = t.getLongitude();
+//            Toast.makeText(this, "TODO: Location things" + t.getLatitude(), Toast.LENGTH_LONG).show();
+        } else {
+            // Ask for both permissions
+            EasyPermissions.requestPermissions(this, "GIVE PERM",
+                    RC_LOCATION_CONTACTS_PERM, perms);
+        }
     }
 
     @Override

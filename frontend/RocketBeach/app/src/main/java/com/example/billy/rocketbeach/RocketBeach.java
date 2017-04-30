@@ -42,4 +42,7 @@ interface RocketBeach {
 
     @GET("associate/{id}")
     Call<Void> associateWithTeam(@Path("id") Integer id, @Header("X-Auth-Token") String token);
+
+    @GET("health/update")
+    Call<UpdateHealthResponse> updateHealth(@Header("X-Auth-Token") String token, @QueryMap Map<String, String> queries);
 }
