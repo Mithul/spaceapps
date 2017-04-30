@@ -20,10 +20,10 @@ interface RocketBeach {
     Call<Beach> getBeachInfo(@Path(value = "beach_id", encoded = true) String beachId, @Header("X-Auth-Token") String auth);
 
     @GET("attack")
-    Call<Beach> attack(@Header("X-Auth-Token") String auth, @QueryMap Map<String, String> queries);
+    Call<AttackResponse> attack(@Header("X-Auth-Token") String auth, @QueryMap Map<String, String> queries);
 
     @GET("attack/{beach_id}")
-    Call<Beach> attack(@Path(value = "beach_id", encoded = true) String beachId, @Header("X-Auth-Token") String auth, @QueryMap Map<String, String> queries);
+    Call<AttackResponse> attack(@Path(value = "beach_id", encoded = true) String beachId, @Header("X-Auth-Token") String auth, @QueryMap Map<String, String> queries);
 
     @FormUrlEncoded
     @POST("users")

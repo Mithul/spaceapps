@@ -23,10 +23,12 @@ class BeachesController < ApplicationController
     if beach.distance(point) < 1.0
       beach.health = 0.0 if beach.health.nil?
       beach.team = current_user.team if !beach.team_id
-      if beach.team == current_user.team
-        beach.health = beach.health + 1
-      else
-        beach.health = beach.health - 1          
+      if !current_user.team.nil?
+        if beach.team == current_user.team 
+          beach.health = beach.health + 1
+        else
+          beach.health = beach.health - 1          
+        end
       end
       beach.health = 100 if beach.health > 100
       if beach.health < 0

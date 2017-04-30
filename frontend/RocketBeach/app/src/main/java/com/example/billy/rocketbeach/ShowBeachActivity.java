@@ -24,7 +24,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.pushbots.push.Pushbots;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -138,11 +140,14 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         final TextView uv_index = (TextView)findViewById(R.id.uv_index);
 
         final Beach[] beach = {null};
-        rocket.getBeachInfo("1", token).enqueue(new Callback<Beach>() {
+        //TODO : Dynamic Beach id
+        String beach_id = "1";
+        rocket.getBeachInfo(beach_id, token).enqueue(new Callback<Beach>() {
             @Override
             public void onResponse(Call<Beach> call, Response<Beach> response) {
                 if (response.code() == 200) {
                     beach[0] = response.body();
+                    beach[0].validate_team();
                     beach_name.setText(beach[0].name);
                     beach_health.setText(beach[0].health);
                     beach_team.setText(beach[0].team.name);
@@ -161,22 +166,34 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        googleApiClient = new GoogleApiClient.Builder(this, this, this).addApi(LocationServices.API).build();
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
 
-            double lat = lastLocation.getLatitude(), lon = lastLocation.getLongitude();
-            Log.e("Biljith", lon + " " + lat);
-            Toast.makeText(this, lon+" "+lat, Toast.LENGTH_SHORT).show();
-        }else{
-            Log.e("Biljith", "No");
-            Toast.makeText(this, "No", Toast.LENGTH_SHORT).show();
-        }
         findViewById(R.id.attack_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO : Attack beach
+                Map<String, String> options = new HashMap<>();
+                //TODO : remove hardcoded location
+                options.put("lat", "40.7");
+                options.put("long", "-74.2");
+                rocket.attack("1", token, options).enqueue(new Callback<AttackResponse>() {
+                    @Override
+                    public void onResponse(Call<AttackResponse> call, Response<AttackResponse> response) {
+                        if (response.code() == 200) {
+                            AttackResponse ar =response.body();
+                            ar.validate_team();
+                            Log.e("Attack", String.valueOf(ar.status));
+                            beach[0] = ar.beach;
+                            beach_name.setText(beach[0].name);
+                            beach_health.setText(beach[0].health);
+                            beach_team.setText(ar.team.name);
+//                            uv_index.setText(String.valueOf(beach[0].uv_index.value));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<AttackResponse> call, Throwable t) {
+                        Log.e("ShowBeach",t.toString());
+                    }
+                });
             }
         });
         findViewById(R.id.attack_button).setOnTouchListener(mDelayHideTouchListener);
