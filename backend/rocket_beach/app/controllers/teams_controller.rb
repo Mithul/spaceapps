@@ -23,7 +23,17 @@ class TeamsController < ApplicationController
   end
 
   def get_details
-    render json: {user: current_user, team: current_user.team}
+    life = false
+    if(!current_user.last_death.nil?)
+      if (current_user.last_death - DateTime.current) > 3
+        life = true 
+        current_user.health = 100
+        current_user.save
+      end
+    else
+      life = true
+    end
+    render json: {user: current_user, team: current_user.team, user_alive: life}
   end
 
   # GET /teams/1
