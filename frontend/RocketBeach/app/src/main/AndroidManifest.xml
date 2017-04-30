@@ -7,7 +7,6 @@
 
     <uses-feature android:name="android.hardware.location.gps" />
 
-
     <!-- GCM related permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
@@ -21,25 +20,31 @@
     <uses-permission android:name="com.example.billy.permission.C2D_MESSAGE" />
 
     <application
+        android:name=".PushbotsMain"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:name=".PushbotsMain">
+        android:theme="@style/AppTheme">
         <activity android:name=".MainActivity" />
         <activity android:name=".BeachActivity" />
         <activity
             android:name=".LoginActivity"
             android:label="@string/title_activity_login">
+
+        </activity>
+        <activity android:name=".TeamActivity" />
+        <activity android:name=".ProfileActivity"></activity>
+        <activity
+            android:name=".ShowBeachActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_show_beach"
+            android:theme="@style/FullscreenTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity android:name=".TeamActivity"></activity>
-        <activity android:name=".ProfileActivity">
         </activity>
     </application>
 

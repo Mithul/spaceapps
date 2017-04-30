@@ -9,11 +9,15 @@ import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 import retrofit2.http.QueryMap;
 
 interface RocketBeach {
     @GET("search/beaches.json")
     Call<List<Beach>> listBeaches(@QueryMap Map<String, String> queries, @Header("X-Auth-Token") String auth);
+
+    @GET("beaches/{beach_id}.json")
+    Call<Beach> getBeachInfo(@Path(value = "beach_id", encoded = true) String beachId, @Header("X-Auth-Token") String auth);
 
     @FormUrlEncoded
     @POST("users")

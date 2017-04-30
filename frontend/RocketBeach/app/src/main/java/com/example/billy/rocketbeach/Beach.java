@@ -5,5 +5,7 @@ class Beach {
     public String name;
     public String latitude;
     public String longitude;
+    public String health;
+    public Team team;
     public UVResponse uv_index;
 }

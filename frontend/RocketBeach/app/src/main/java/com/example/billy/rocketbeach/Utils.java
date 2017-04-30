@@ -25,7 +25,7 @@ class Utils {
     static RocketBeach getService() {
         if (rocket == null) {
             rocket = new Retrofit.Builder()
-                    .baseUrl("https://rocketbeach.ml/")
+                    .baseUrl("http://192.168.44.43/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
                     .create(RocketBeach.class);
