@@ -9,6 +9,10 @@ android {
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
+        manifestPlaceholders = [manifestApplicationId         : "${applicationId}",
+                                pushbots_app_id               : "590598c04a9efa371d8b4569",
+                                pushbots_loglevel             : "DEBUG",
+                                google_sender_id              : "1091890460804"]
     }
     buildTypes {
         release {
@@ -25,9 +29,9 @@ dependencies {
     compile 'co.dift.ui.swipetoaction:library:1.1'
     compile 'com.squareup.retrofit2:retrofit:2.2.0'
     compile 'com.squareup.retrofit2:converter-gson:2.2.0'
-    compile 'com.google.android.gms:play-services-location:10.2.0'
-    compile 'com.google.android.gms:play-services:10.2.4'
+    compile 'com.google.android.gms:play-services-location:10.2.4'
     compile 'com.android.support:design:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'com.androidessence.lib:richtextview:1.0.1'
+    compile "com.google.android.gms:play-services-gcm:10.2.4"
+    compile 'com.pushbots:pushbots-lib:3.0.1@aar'
 }

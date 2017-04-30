@@ -19,7 +19,7 @@ class Utils {
     static RocketBeach getService() {
         if (rocket == null) {
             rocket = new Retrofit.Builder()
-                    .baseUrl("http://81.4.105.95:3000/")
+                    .baseUrl("http://81.4.105.94:3000/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
                     .create(RocketBeach.class);

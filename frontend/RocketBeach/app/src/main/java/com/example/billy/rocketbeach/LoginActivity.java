@@ -17,6 +17,9 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.pushbots.push.Pushbots;
 
 import java.util.Locale;
 
@@ -78,6 +81,11 @@ public class LoginActivity extends AppCompatActivity {
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        Pushbots.sharedInstance().registerForRemoteNotifications();
+        //TODO: Send the registrationId to the server after logging in
+
+
     }
 
     private void attemptLogin() {
@@ -119,8 +127,39 @@ public class LoginActivity extends AppCompatActivity {
                     if (response.code() == 200 && response.body().message == null) {
                         showProgress(false);
                         Beachgoer person = response.body();
+//                        Log.e("Debug_GCM",response.body().toString());
+//                        Log.e("Debug_GCM",person.auth_token);
                         Utils.makeToken(preferences, "X-Auth-Token", person.auth_token);
-                        startActivity(new Intent(getApplicationContext(), TeamActivity.class));
+                        final String token = getSharedPreferences("RocketBeach", 0).getString("X-Auth-Token", "");
+//                        Log.e("Debug_GCM",token);
+                        String registrationId = Pushbots.sharedInstance().getGCMRegistrationId();
+//                        Log.e("Debug_GCM",registrationId);
+
+
+
+                        rocket.registerUserDevice(registrationId, token).enqueue(new Callback<Beachgoer>() {
+                            @Override
+                            public void onResponse(Call<Beachgoer> call, Response<Beachgoer> response) {
+                                if (response.code() == 200 && response.body().message == null) {
+                                    Log.e("Debug_GCM","Passed");
+                                    showProgress(false);
+                                    Beachgoer person = response.body();
+                                    Utils.makeToken(preferences, "X-Auth-Token", person.auth_token);
+                                    String registrationId = Pushbots.sharedInstance().getGCMRegistrationId();
+                                    startActivity(new Intent(getApplicationContext(), TeamActivity.class));
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<Beachgoer> call, Throwable t) {
+                                showProgress(false);
+                                mEmailView.setError(String.format(Locale.ENGLISH, "Some problem occured %s", t.getMessage() + ""));
+                                mEmailView.requestFocus();
+                                Toast.makeText(getBaseContext(), "Failed registering device", Toast.LENGTH_LONG).show();
+                            }
+                        });
+
+
                     }
                 }
 

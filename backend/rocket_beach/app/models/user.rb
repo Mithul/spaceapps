@@ -11,6 +11,14 @@ class User < ApplicationRecord
     self.auth_token = set_auth_token if !auth_token.present?
   end
 
+  def send_push_notification msg
+    token = self.device_token
+    return if !token
+    device = Pushbots::Device.new(token, :android)
+    push = Pushbots::One.new(:android, token, msg, nil, {})
+    push.send
+  end
+
   private
   def set_auth_token
     return if auth_token.present?

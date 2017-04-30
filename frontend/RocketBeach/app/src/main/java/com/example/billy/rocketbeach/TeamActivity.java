@@ -11,7 +11,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.androidessence.lib.RichTextView;
 
 public class TeamActivity extends AppCompatActivity {
 
