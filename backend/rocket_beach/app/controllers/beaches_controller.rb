@@ -35,9 +35,14 @@ class BeachesController < ApplicationController
         beach.health = 0.0 
         beach.team = nil
       end
+      byebug
+      xp = beach.potential_xp
+      current_user.xp = 100 if current_user.xp.nil?
+      current_user.xp += xp
+      current_user.save
       beach.save
       Rails.logger.info(beach.errors.inspect) 
-      render json: {beach: JSON.parse(beach.to_json), team: JSON.parse(beach.team.to_json), status: true}
+      render json: {beach: JSON.parse(beach.to_json), team: JSON.parse(beach.team.to_json), current_xp: current_user.xp, xp_increase: xp, status: true}
     else
       render json: {message: "Cannot attack beach, Go nearer", status: false}
       return
