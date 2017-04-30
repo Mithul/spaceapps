@@ -1,6 +1,7 @@
 package com.example.billy.rocketbeach;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -18,7 +19,6 @@ import com.google.android.gms.location.LocationServices;
 public class LocationAPI23 extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 1;
-    public static final String TAG = "Test_Debug";
     private GoogleApiClient googleApiClient;
 
     @Override
@@ -36,7 +36,7 @@ public class LocationAPI23 extends AppCompatActivity implements GoogleApiClient.
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSION_ACCESS_FINE_LOCATION:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -66,14 +66,26 @@ public class LocationAPI23 extends AppCompatActivity implements GoogleApiClient.
     @Override
     public void onConnected(Bundle bundle) {
         Log.d("RocketBeach", "Connected to Google Play Services!");
+        Intent gotoBeaches = new Intent(getApplicationContext(), BeachActivity.class);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+            double lat, lon;
 
-            double lat = lastLocation.getLatitude(), lon = lastLocation.getLongitude();
-            Log.d("RocketBeach", lon + " " + lat);
+            if (lastLocation == null) {
+                lat = 13.45;
+                lon = 2.3;
+            } else {
+                lat = lastLocation.getLatitude();
+                lon = lastLocation.getLongitude();
+
+                gotoBeaches.putExtra("GPS", new double[]{lat, lon});
+            }
+            Log.d("RocketBeach", "MandN " + lon + " " + lat);
             Toast.makeText(this, lon+" "+lat, Toast.LENGTH_SHORT).show();
+            startActivity(gotoBeaches);
+            finish();
         }
     }
 

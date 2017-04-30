@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.LocationListener;
 import com.pushbots.push.Pushbots;
 
 import java.net.HttpURLConnection;
@@ -139,6 +140,9 @@ public class LoginActivity extends AppCompatActivity {
             rocket.loginUser(email, password).enqueue(new Callback<Beachgoer>() {
                 @Override
                 public void onResponse(Call<Beachgoer> call, Response<Beachgoer> response) {
+
+                    Log.d("RocketBeach", call.request().body().toString());
+
                     if (response.code() == HttpURLConnection.HTTP_OK) {
                         showProgress(false);
                         Beachgoer person = response.body();
