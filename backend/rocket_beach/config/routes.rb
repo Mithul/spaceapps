@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
 
+  get 'notifications/create'
+
   get '/health/status' => 'user#get_health', as: :health
   get '/health/update' => 'user#update_health', as: :update_health
   get '/health/reset' => 'user#reset_health'
@@ -16,6 +18,10 @@ Rails.application.routes.draw do
   get '/me' => 'teams#get_details', as: :get_user_details
   get '/get_association' => 'teams#get_association', as: :get_association
   get '/associate/:id' => 'teams#associate', as: :associate
+
+  get '/notifications/create' => 'notifications#create'
+
+  post '/register_device' => 'user#register_device'  
 
   devise_for :users, :controllers => {:registrations => "registrations", sessions: "sessions"}
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html

@@ -10,6 +10,10 @@ class SessionsController < Devise::SessionsController
     if resource.valid_password?(params[:user_login][:password])
       sign_in(:user, resource)
       resource.ensure_authentication_token!
+      resource.save
+      message = "Welcome to Rocket Beach"
+      message = "Welcome back to Rocket Beach" if resource.sign_in_count > 1
+      resource.send_push_notification message
       render :json=> {:auth_token=>resource.auth_token, :email=>resource.email}, :status => :ok
       return
     end

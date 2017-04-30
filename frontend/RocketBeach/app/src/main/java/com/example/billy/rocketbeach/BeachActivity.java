@@ -70,7 +70,7 @@ public class BeachActivity extends AppCompatActivity {
         });
 
 
-//        service.listBeaches(options, Utils.makeToken("fbea86a136e44d649970fe2effc645b7")).enqueue(new Callback<List<Beach>>() {
+//        service.listBeaches(options, Utils.addToken("fbea86a136e44d649970fe2effc645b7")).enqueue(new Callback<List<Beach>>() {
 //            @Override
 //            public void onResponse(Call<List<Beach>> call, Response<List<Beach>> response) {
 //                Log.d("TEST", response.code() + "");

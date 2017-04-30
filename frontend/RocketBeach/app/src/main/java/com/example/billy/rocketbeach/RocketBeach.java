@@ -1,8 +1,5 @@
 package com.example.billy.rocketbeach;
 
-
-import org.json.JSONObject;
-
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +13,7 @@ import retrofit2.http.QueryMap;
 
 interface RocketBeach {
     @GET("search/beaches.json")
-    Call<List<Beach>> listBeaches(@QueryMap Map<String, String> queries, @Header("Authorization") String auth);
+    Call<List<Beach>> listBeaches(@QueryMap Map<String, String> queries, @Header("X-Auth-Token") String auth);
 
     @FormUrlEncoded
     @POST("users")
@@ -25,4 +22,11 @@ interface RocketBeach {
     @FormUrlEncoded
     @POST("users/sign_in")
     Call<Beachgoer> loginUser(@Field("user_login[email]") String email, @Field("user_login[password]") String pass);
+
+    @FormUrlEncoded
+    @POST("register_device")
+    Call<Beachgoer> registerUserDevice(@Field("device_token") String token, @Header("X-Auth-Token") String auth);
+
+    @GET("me")
+    Call<Beachgoer> getMe(@Header("X-Auth-Token") String token);
 }

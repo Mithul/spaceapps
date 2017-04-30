@@ -17,6 +17,9 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.pushbots.push.Pushbots;
 
 import java.util.Locale;
 
@@ -42,7 +45,6 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         preferences = getSharedPreferences("RocketBeach", 0);
-
         rocket = Utils.getService();
         // Set up the login form.
         mEmailView = (EditText) findViewById(R.id.email);
@@ -78,6 +80,23 @@ public class LoginActivity extends AppCompatActivity {
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        Pushbots.sharedInstance().registerForRemoteNotifications();
+        //TODO: Send the registrationId to the server after logging in
+
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        checkLogin();
+    }
+
+    private void checkLogin() {
+        if (preferences.contains("X-Auth-Token")) {
+            startActivity(new Intent(getApplicationContext(), TeamActivity.class));
+        }
     }
 
     private void attemptLogin() {
@@ -119,8 +138,37 @@ public class LoginActivity extends AppCompatActivity {
                     if (response.code() == 200 && response.body().message == null) {
                         showProgress(false);
                         Beachgoer person = response.body();
+//                        Log.e("Debug_GCM",response.body().toString());
+//                        Log.e("Debug_GCM",person.auth_token);
                         Utils.makeToken(preferences, "X-Auth-Token", person.auth_token);
-                        startActivity(new Intent(getApplicationContext(), TeamActivity.class));
+                        final String token = getSharedPreferences("RocketBeach", 0).getString("X-Auth-Token", "");
+//                        Log.e("Debug_GCM",token);
+                        String registrationId = Pushbots.sharedInstance().getGCMRegistrationId();
+//                        Log.e("Debug_GCM",registrationId);
+
+
+
+                        rocket.registerUserDevice(registrationId, token).enqueue(new Callback<Beachgoer>() {
+                            @Override
+                            public void onResponse(Call<Beachgoer> call, Response<Beachgoer> response) {
+                                if (response.code() == 200 && response.body().message == null) {
+                                    Log.e("Debug_GCM","Passed");
+                                    showProgress(false);
+                                    Beachgoer person = response.body();
+                                    Utils.addToken(preferences, "X-Auth-Token", person.auth_token);
+                                    String registrationId = Pushbots.sharedInstance().getGCMRegistrationId();
+                                    startActivity(new Intent(getApplicationContext(), TeamActivity.class));
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<Beachgoer> call, Throwable t) {
+                                showProgress(false);
+                                mEmailView.setError(String.format(Locale.ENGLISH, "Some problem occured %s", t.getMessage() + ""));
+                                mEmailView.requestFocus();
+                                Toast.makeText(getBaseContext(), "Failed registering device", Toast.LENGTH_LONG).show();
+                            }
+                        });
                     }
                 }
 
@@ -175,7 +223,7 @@ public class LoginActivity extends AppCompatActivity {
                     if (response.code() == 201) {
                         Beachgoer token = response.body();
                         Log.d("TEST", token.auth_token);
-                        Utils.makeToken(preferences, "X-Auth-Token", token.auth_token);
+                        Utils.addToken(preferences, "X-Auth-Token", token.auth_token);
                         startActivity(new Intent(getApplicationContext(), TeamActivity.class));
                     } else {
                         mEmailView.setError("Some problem occured");
@@ -203,9 +251,6 @@ public class LoginActivity extends AppCompatActivity {
         return password.length() >= 6;
     }
 
-    /**
-     * Shows the progress UI and hides the login form.
-     */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow

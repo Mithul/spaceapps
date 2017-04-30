@@ -15,6 +15,11 @@ class UserController < ApplicationController
   	render json: {user_alive: life, health: current_user.health}
   end
 
+  def register_device
+    current_user.device_token = params[:device_token]
+    render json: {status: current_user.save}
+  end
+
   def update_health
   	life = true
   	if params[:id]
