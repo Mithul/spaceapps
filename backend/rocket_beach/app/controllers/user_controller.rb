@@ -3,10 +3,14 @@ class UserController < ApplicationController
 
   def get_health
   	life = false
-  	if (current_user.last_death - DateTime.current) > 3
-  		life = true 
-  		current_user.health = 100
-  		current_user.save
+  	if(!current_user.last_death.nil?)
+  		if (current_user.last_death - DateTime.current) > 3
+  			life = true 
+  			current_user.health = 100
+  			current_user.save
+  		end
+  	else
+  		life = true
   	end
   	render json: {user_alive: life, health: current_user.health}
   end
@@ -23,10 +27,10 @@ class UserController < ApplicationController
 
     point = [params[:lat].to_f, params[:long].to_f]
     beach = Beach.all.sort_by{|b| b.distance(point)}.first if !params[:id]
-    current_user.health = 100.0 if beach.health.nil?
+    current_user.health = 100.0 if current_user.health.nil?
     
     if beach.distance(point) < 1.0
-      uv = beach.uv
+      uv = beach.uv_index
       uv = (uv/12) * 10
       uv = 0.01 if uv==0
     else
