@@ -1,52 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
-    <!-- this view reveals when swipe right -->
-    <RelativeLayout
-        android:tag="reveal-right"
-        android:background="@color/colorAccent"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-    </RelativeLayout>
-
-
-    <!-- this view reveals when swipe left -->
-    <RelativeLayout
-        android:tag="reveal-left"
-        android:background="@color/colorAccent"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-    </RelativeLayout>
-
-
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="wrap_content">
     <!-- this is the item front view -->
     <RelativeLayout
-        android:tag="front"
-        android:background="@color/colorPrimaryDark"
+        android:background="#ffffff"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:padding="16dp">
         <TextView
-            android:id="@+id/title"
+            android:id="@+id/name"
+            android:textColor="#000"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/author"
-            android:layout_below="@+id/title"
-            android:layout_alignStart="@+id/title"
+            android:id="@+id/info"
+            android:layout_below="@+id/name"
+            android:layout_alignStart="@+id/name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="14sp" />
     </RelativeLayout>
 
     <!-- just a divider -->
-    <View android:background="@color/colorAccent"
+    <View android:background="#000"
         android:layout_width="fill_parent"
         android:layout_height="0.5dp" />
 
-</FrameLayout>
+</LinearLayout>

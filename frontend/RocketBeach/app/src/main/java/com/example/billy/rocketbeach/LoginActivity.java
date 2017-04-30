@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.pushbots.push.Pushbots;
 
+import java.net.HttpURLConnection;
 import java.util.Locale;
 
 import retrofit2.Call;
@@ -138,7 +139,7 @@ public class LoginActivity extends AppCompatActivity {
             rocket.loginUser(email, password).enqueue(new Callback<Beachgoer>() {
                 @Override
                 public void onResponse(Call<Beachgoer> call, Response<Beachgoer> response) {
-                    if (response.code() == 200 && response.body().message == null) {
+                    if (response.code() == HttpURLConnection.HTTP_OK) {
                         showProgress(false);
                         Beachgoer person = response.body();
 
@@ -166,7 +167,7 @@ public class LoginActivity extends AppCompatActivity {
                         });
                     } else {
                         showProgress(false);
-                        mEmailView.setError(response.body().message);
+                        mEmailView.setError(String.format(Locale.ENGLISH, "Error while logging in %d", response.code()));
                         mEmailView.requestFocus();
                     }
                 }

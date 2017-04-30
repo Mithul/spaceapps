@@ -5,22 +5,26 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import co.dift.ui.SwipeToAction;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class BeachActivity extends AppCompatActivity {
 
-    RecyclerView beaches;
+    ListView beaches;
     BeachAdapter adapter;
-    SwipeToAction swipeToAction;
 
     List<Beach> list = new ArrayList<>();
 
@@ -29,11 +33,9 @@ public class BeachActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_beach);
 
-        beaches = (RecyclerView) findViewById(R.id.beaches);
+        beaches = (ListView) findViewById(R.id.beaches);
         adapter = new BeachAdapter(list);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        beaches.setLayoutManager(layoutManager);
-        beaches.setHasFixedSize(true);
         beaches.setAdapter(adapter);
 
         RocketBeach service = Utils.getService();
@@ -53,7 +55,9 @@ public class BeachActivity extends AppCompatActivity {
                 Log.d("RocketBeach", response.code() + "");
                 list.addAll(response.body());
                 Log.d("RocketBeach", response.body().size() + " ");
-                adapter.notifyDataSetChanged();
+                adapter.setList(list);
+                beaches.setAdapter(adapter);
+//                adapter.notifyDataSetChanged();
             }
 
             @Override
@@ -62,27 +66,16 @@ public class BeachActivity extends AppCompatActivity {
             }
         });
 
-        swipeToAction = new SwipeToAction(beaches, new SwipeToAction.SwipeListener<Beach>() {
+        beaches.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public boolean swipeLeft(final Beach itemData) {
-                return true;
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Beach b = list.get(position);
+                Toast.makeText(
+                        getApplicationContext(),
+                        b.name,
+                        Toast.LENGTH_SHORT
+                ).show();
             }
-
-            @Override
-            public boolean swipeRight(Beach itemData) {
-                return true;
-            }
-
-            @Override
-            public void onClick(Beach itemData) {
-            }
-
-            @Override
-            public void onLongClick(Beach itemData) {
-
-            }
-
         });
-
     }
 }
