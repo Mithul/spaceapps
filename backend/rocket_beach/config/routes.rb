@@ -1,5 +1,9 @@
 Rails.application.routes.draw do
 
+  get '/health/status' => 'user#get_health', as: :health
+  get '/health/update' => 'user#update_health', as: :update_health
+  get '/health/reset' => 'user#reset_health'
+
   resources :teams
   resources :beaches
 
