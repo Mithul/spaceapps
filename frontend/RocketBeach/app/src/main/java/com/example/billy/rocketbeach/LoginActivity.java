@@ -19,7 +19,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.location.LocationListener;
 import com.pushbots.push.Pushbots;
 
 import java.net.HttpURLConnection;
@@ -79,14 +78,10 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
         Pushbots.sharedInstance().registerForRemoteNotifications();
-        //TODO: Send the registrationId to the server after logging in
-
-
     }
 
     @Override

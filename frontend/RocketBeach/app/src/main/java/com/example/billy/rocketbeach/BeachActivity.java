@@ -83,7 +83,7 @@ public class BeachActivity extends AppCompatActivity implements GoogleApiClient.
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setLogo(R.drawable.beach_conquest);
             actionBar.setIcon(R.drawable.beach_conquest);
         }
         mRequestingLocationUpdates = false;

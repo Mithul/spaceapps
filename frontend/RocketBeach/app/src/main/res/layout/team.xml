@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:paddingBottom="16dp"
+    android:padding="16dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <ImageView
         android:id="@+id/badge"
+        android:src="@drawable/zeus"
         android:layout_width="wrap_content"
         android:layout_weight="6"
         android:layout_height="0dp"
         />
 
     <TextView
+        android:text="Test"
+        android:textColor="#000"
+        android:textSize="20sp"
         android:id="@+id/team_name"
         android:layout_width="wrap_content"
         android:layout_weight="1"
@@ -19,6 +23,9 @@
         />
 
     <TextView
+        android:text="Test"
+        android:textColor="#000"
+        android:textSize="16sp"
         android:id="@+id/team_info"
         android:layout_width="wrap_content"
         android:layout_weight="1"
