@@ -1,5 +1,6 @@
 package com.example.billy.rocketbeach;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -38,6 +39,8 @@ public class BeachActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         beaches.setAdapter(adapter);
 
+        final Intent showBeach = new Intent(getApplicationContext(), ShowBeachActivity.class);
+
         RocketBeach service = Utils.getService();
 
         Map<String, String> options = new HashMap<>();
@@ -75,6 +78,8 @@ public class BeachActivity extends AppCompatActivity {
                         b.name,
                         Toast.LENGTH_SHORT
                 ).show();
+                showBeach.putExtra("Beach", b.flatten());
+                startActivity(showBeach);
             }
         });
     }

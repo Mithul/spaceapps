@@ -16,4 +16,23 @@ class Beach {
             team.name = "Neutral";
         }
     }
+
+    public String[] flatten() {
+        return new String[] {
+                id + "",
+                name,
+                latitude,
+                longitude,
+        };
+    }
+
+    public static Beach unflatten(String[] values) {
+        Beach b = new Beach();
+        b.id = Integer.parseInt(values[0]);
+        b.name = values[1];
+        b.latitude = values[2];
+        b.longitude = values[3];
+
+        return b;
+    }
 }
