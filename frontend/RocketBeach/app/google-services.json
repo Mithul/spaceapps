@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "1091890460804",
+    "firebase_url": "https://spaceapps-64ac2.firebaseio.com",
+    "project_id": "spaceapps-64ac2",
+    "storage_bucket": "spaceapps-64ac2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1091890460804:android:529ec7ff615a7f5f",
+        "android_client_info": {
+          "package_name": "com.example.billy.rocketbeach"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1091890460804-egr0i7hleld4tvqku6iqkf6v0fe6m1n8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAI6q0Rqc_OTQHmZiwtARibZkkM2TAfyvQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

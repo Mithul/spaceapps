@@ -1,0 +1,2 @@
+class Hab < ApplicationRecord
+end
