@@ -43,8 +43,7 @@ class UserController < ApplicationController
     if current_user.health <= 0.00
     	current_user.last_death = DateTime.now
     	life = false
-    end
-    Rails.logger.info(beach.errors.inspect) 
+    end 
     render json: {message: "Health update successfull", health:current_user.health, user_alive: life,status: true}
 
   end
