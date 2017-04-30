@@ -1,7 +1,14 @@
 package com.example.billy.rocketbeach;
 
+import android.*;
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,6 +19,9 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.pushbots.push.Pushbots;
 
 import java.util.Locale;
@@ -24,10 +34,12 @@ import retrofit2.Response;
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class ShowBeachActivity extends AppCompatActivity {
+public class ShowBeachActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
 
     private RocketBeach rocket;
+    private GoogleApiClient googleApiClient;
+    private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 1;
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -125,15 +137,16 @@ public class ShowBeachActivity extends AppCompatActivity {
         final TextView beach_team = (TextView)findViewById(R.id.beach_team);
         final TextView uv_index = (TextView)findViewById(R.id.uv_index);
 
+        final Beach[] beach = {null};
         rocket.getBeachInfo("1", token).enqueue(new Callback<Beach>() {
             @Override
             public void onResponse(Call<Beach> call, Response<Beach> response) {
                 if (response.code() == 200) {
-                    Beach beach = response.body();
-                    beach_name.setText(beach.name);
-                    beach_health.setText(beach.health);
-                    beach_team.setText(beach.team.name);
-                    uv_index.setText(String.valueOf(beach.uv_index.value));
+                    beach[0] = response.body();
+                    beach_name.setText(beach[0].name);
+                    beach_health.setText(beach[0].health);
+                    beach_team.setText(beach[0].team.name);
+                    uv_index.setText(String.valueOf(beach[0].uv_index.value));
                 }
             }
 
@@ -148,6 +161,18 @@ public class ShowBeachActivity extends AppCompatActivity {
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
+        googleApiClient = new GoogleApiClient.Builder(this, this, this).addApi(LocationServices.API).build();
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+
+            double lat = lastLocation.getLatitude(), lon = lastLocation.getLongitude();
+            Log.e("Biljith", lon + " " + lat);
+            Toast.makeText(this, lon+" "+lat, Toast.LENGTH_SHORT).show();
+        }else{
+            Log.e("Biljith", "No");
+            Toast.makeText(this, "No", Toast.LENGTH_SHORT).show();
+        }
         findViewById(R.id.attack_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -208,5 +233,57 @@ public class ShowBeachActivity extends AppCompatActivity {
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (googleApiClient != null) {
+            googleApiClient.connect();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        googleApiClient.disconnect();
+        super.onStop();
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        Log.i(ShowBeachActivity.class.getSimpleName(), "Connected to Google Play Services!");
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+
+            double lat = lastLocation.getLatitude(), lon = lastLocation.getLongitude();
+            Log.v("Biljith", lon + " " + lat);
+            Toast.makeText(this, lon+" "+lat, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.i(MainActivity.class.getSimpleName(), "Can't connect to Google Play Services!");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSION_ACCESS_FINE_LOCATION:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // All good!
+                } else {
+                    Toast.makeText(this, "Need your location!", Toast.LENGTH_SHORT).show();
+                }
+
+                break;
+        }
     }
 }

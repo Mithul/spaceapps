@@ -19,6 +19,12 @@ interface RocketBeach {
     @GET("beaches/{beach_id}.json")
     Call<Beach> getBeachInfo(@Path(value = "beach_id", encoded = true) String beachId, @Header("X-Auth-Token") String auth);
 
+    @GET("attack")
+    Call<Beach> attack(@Header("X-Auth-Token") String auth, @QueryMap Map<String, String> queries);
+
+    @GET("attack/{beach_id}")
+    Call<Beach> attack(@Path(value = "beach_id", encoded = true) String beachId, @Header("X-Auth-Token") String auth, @QueryMap Map<String, String> queries);
+
     @FormUrlEncoded
     @POST("users")
     Call<Beachgoer> addUser(@Field("user[email]") String email, @Field("user[password]") String pass, @Field("user[password_confirmation]") String confirm);
