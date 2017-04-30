@@ -2,9 +2,7 @@ package com.example.billy.rocketbeach;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -81,7 +79,7 @@ public class TeamActivity extends AppCompatActivity {
                     public void onResponse(Call<Void> call, Response<Void> response) {
                         showProgress(false);
                         Utils.addToken(getSharedPreferences("RocketBeach", 0), "Team", teams[item].name);
-                        startActivity(new Intent(getApplicationContext(), ProfileActivity.class));
+                        startActivity(new Intent(getApplicationContext(), LocationFiller.class));
                         finish();
                     }
 
@@ -112,7 +110,7 @@ public class TeamActivity extends AppCompatActivity {
 
     private void checkLogin() {
         if (getSharedPreferences("RocketBeach", 0).contains("Team")) {
-            startActivity(new Intent(getApplicationContext(), ProfileActivity.class));
+            startActivity(new Intent(getApplicationContext(), LocationFiller.class));
             finish();
         }
     }

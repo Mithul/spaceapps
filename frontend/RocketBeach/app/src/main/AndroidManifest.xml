@@ -43,11 +43,9 @@
             android:name=".ShowBeachActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_show_beach"
-            android:theme="@style/FullscreenTheme">
-    </activity>
-    <activity android:name=".MainActivity">
-
-    </activity>
-</application>
+            android:theme="@style/FullscreenTheme" />
+        <activity android:name=".MainActivity"></activity>
+        <activity android:name=".LocationFiller"></activity>
+    </application>
 
 </manifest>
