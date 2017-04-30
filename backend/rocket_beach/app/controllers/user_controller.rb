@@ -31,7 +31,7 @@ class UserController < ApplicationController
     
     if beach.distance(point) < 1.0
       uv = beach.uv_index
-      uv = (uv/12) * 10
+      uv = (uv[:value]/12) * 10
       uv = 0.01 if uv==0
     else
       uv = 0.01
