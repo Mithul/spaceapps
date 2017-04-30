@@ -2,9 +2,12 @@ package com.example.billy.rocketbeach;
 
 class Beachgoer {
     public Integer id;
-    public String email;
+    String email;
     String auth_token;
-    public String message;
-    public String affliation;
+    double health;
+    String name;
+    String last_death;
+    String message;
+    String team_id;
 //    public String team;
 }

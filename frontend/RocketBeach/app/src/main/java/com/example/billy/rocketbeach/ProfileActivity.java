@@ -29,7 +29,6 @@ public class ProfileActivity extends AppCompatActivity {
                 .setSubTitle("Mobile Developer")
                 .setBrief("I'm warmed of mobile technologies. Ideas maker, curious and nature lover.")
                 .setWrapScrollView(true)
-                .setShowAsCard(true)
                 .build();
 
 
@@ -43,7 +42,7 @@ public class ProfileActivity extends AppCompatActivity {
                 .setPhoto(R.mipmap.profile_picture)
                 .setCover(R.mipmap.profile_cover)
                 .setName(person.email)
-                .setSubTitle(person.affliation)
+                .setSubTitle(person.team_id)
 //                .setBrief("I'm warmed of mobile technologies. Ideas maker, curious and nature lover.")
                 .setWrapScrollView(true)
                 .setShowAsCard(true)

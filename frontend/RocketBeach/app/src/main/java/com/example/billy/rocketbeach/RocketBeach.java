@@ -39,4 +39,7 @@ interface RocketBeach {
 
     @GET("me")
     Call<Beachgoer> getMe(@Header("X-Auth-Token") String token);
+
+    @GET("associate/{id}")
+    Call<Void> associateWithTeam(@Path("id") Integer id, @Header("X-Auth-Token") String token);
 }

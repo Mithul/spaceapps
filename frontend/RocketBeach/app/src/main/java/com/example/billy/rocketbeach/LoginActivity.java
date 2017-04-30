@@ -138,17 +138,11 @@ public class LoginActivity extends AppCompatActivity {
                     if (response.code() == 200 && response.body().message == null) {
                         showProgress(false);
                         Beachgoer person = response.body();
-//                        Log.e("Debug_GCM",response.body().toString());
-//                        Log.e("Debug_GCM",person.auth_token);
+
                         Utils.addToken(preferences, "X-Auth-Token", person.auth_token);
-                        final String token = getSharedPreferences("RocketBeach", 0).getString("X-Auth-Token", "");
-//                        Log.e("Debug_GCM",token);
                         String registrationId = Pushbots.sharedInstance().getGCMRegistrationId();
-//                        Log.e("Debug_GCM",registrationId);
 
-
-
-                        rocket.registerUserDevice(registrationId, token).enqueue(new Callback<Beachgoer>() {
+                        rocket.registerUserDevice(registrationId, person.auth_token).enqueue(new Callback<Beachgoer>() {
                             @Override
                             public void onResponse(Call<Beachgoer> call, Response<Beachgoer> response) {
                                 if (response.code() == 200 && response.body().message == null) {
@@ -158,6 +152,7 @@ public class LoginActivity extends AppCompatActivity {
                                     Utils.addToken(preferences, "X-Auth-Token", person.auth_token);
                                     String registrationId = Pushbots.sharedInstance().getGCMRegistrationId();
                                     startActivity(new Intent(getApplicationContext(), TeamActivity.class));
+                                    finish();
                                 }
                             }
 
@@ -225,6 +220,7 @@ public class LoginActivity extends AppCompatActivity {
                         Log.d("TEST", token.auth_token);
                         Utils.addToken(preferences, "X-Auth-Token", token.auth_token);
                         startActivity(new Intent(getApplicationContext(), TeamActivity.class));
+                        finish();
                     } else {
                         mEmailView.setError("Some problem occured");
                         mEmailView.requestFocus();
