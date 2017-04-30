@@ -61,18 +61,28 @@ public class TeamActivity extends AppCompatActivity {
         joinTeamBtn = (Button) findViewById(R.id.join_team);
     }
 
+    @Override
+    protected void onStart() {
+        checkLogin();
+        super.onStart();
+    }
+
     public void associateToTeam(View v) {
-        int item = customCarouselView.getCurrentItem();
+        checkLogin();
+        final int item = customCarouselView.getCurrentItem();
         showProgress(true);
-        Utils.getService().associateWithTeam(
-                teams[item].id,
-                getSharedPreferences("RocketBeach", 0).getString("X-Auth-Token", "")
-        )
+        Utils.getService()
+                .associateWithTeam(
+                        teams[item].id,
+                        getSharedPreferences("RocketBeach", 0).getString("X-Auth-Token", "")
+                )
                 .enqueue(new Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, Response<Void> response) {
                         showProgress(false);
+                        Utils.addToken(getSharedPreferences("RocketBeach", 0), "Team", teams[item].name);
                         startActivity(new Intent(getApplicationContext(), ProfileActivity.class));
+                        finish();
                     }
 
                     @Override
@@ -100,8 +110,13 @@ public class TeamActivity extends AppCompatActivity {
         }
     };
 
+    private void checkLogin() {
+        if (getSharedPreferences("RocketBeach", 0).contains("Team")) {
+            startActivity(new Intent(getApplicationContext(), ProfileActivity.class));
+            finish();
+        }
+    }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {
         int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
         final int view = show ? View.GONE : View.VISIBLE;

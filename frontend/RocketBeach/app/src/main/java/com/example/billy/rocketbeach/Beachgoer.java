@@ -11,3 +11,7 @@ class Beachgoer {
     String team_id;
 //    public String team;
 }
+
+class MeDTO {
+    Beachgoer user;
+}

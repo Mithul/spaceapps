@@ -89,17 +89,20 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
-        super.onStart();
         checkLogin();
+        super.onStart();
     }
 
     private void checkLogin() {
+        Log.d("RocketBeach", "Checking if already logged in");
         if (preferences.contains("X-Auth-Token")) {
             startActivity(new Intent(getApplicationContext(), TeamActivity.class));
+            finish();
         }
     }
 
     private void attemptLogin() {
+        checkLogin();
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
@@ -148,9 +151,6 @@ public class LoginActivity extends AppCompatActivity {
                                 if (response.code() == 200 && response.body().message == null) {
                                     Log.e("Debug_GCM","Passed");
                                     showProgress(false);
-                                    Beachgoer person = response.body();
-                                    Utils.addToken(preferences, "X-Auth-Token", person.auth_token);
-                                    String registrationId = Pushbots.sharedInstance().getGCMRegistrationId();
                                     startActivity(new Intent(getApplicationContext(), TeamActivity.class));
                                     finish();
                                 }
@@ -164,6 +164,10 @@ public class LoginActivity extends AppCompatActivity {
                                 Toast.makeText(getBaseContext(), "Failed registering device", Toast.LENGTH_LONG).show();
                             }
                         });
+                    } else {
+                        showProgress(false);
+                        mEmailView.setError(response.body().message);
+                        mEmailView.requestFocus();
                     }
                 }
 
@@ -172,7 +176,6 @@ public class LoginActivity extends AppCompatActivity {
                     showProgress(false);
                     mEmailView.setError(String.format(Locale.ENGLISH, "Some problem occured %s", t.getMessage() + ""));
                     mEmailView.requestFocus();
-
                 }
             });
 
@@ -180,6 +183,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void attemptSignup() {
+        checkLogin();
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
