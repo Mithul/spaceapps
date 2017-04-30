@@ -6,6 +6,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.media.Image;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
@@ -16,6 +17,8 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -112,6 +115,19 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         }
     };
 
+    private void set_team_theme(String team_name, ImageView team_image, FrameLayout frame_layout){
+        if(team_name.toLowerCase().trim().equals("neutral")) {
+            team_image.setImageResource(R.drawable.neutral);
+            frame_layout.setBackgroundColor(getResources().getColor(R.color.neutral_theme));
+        }else if(team_name.toLowerCase().trim().equals("zeus")) {
+            team_image.setImageResource(R.drawable.zeus_white);
+            frame_layout.setBackgroundColor(getResources().getColor(R.color.zeus_theme));
+        }else if(team_name.toLowerCase().trim().equals("poseidon")) {
+            team_image.setImageResource(R.drawable.poseidon_white);
+            frame_layout.setBackgroundColor(getResources().getColor(R.color.poseidon_theme));
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -138,6 +154,9 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         final TextView beach_health = (TextView)findViewById(R.id.beach_health);
         final TextView beach_team = (TextView)findViewById(R.id.beach_team);
         final TextView uv_index = (TextView)findViewById(R.id.uv_index);
+        final TextView potential_xp = (TextView)findViewById(R.id.potential_xp);
+        final ImageView team_image = (ImageView) findViewById(R.id.team_image);
+        final FrameLayout frame_layout = (FrameLayout) findViewById(R.id.show_beach_frame);
 
         final Beach[] beach = {null};
         //TODO : Dynamic Beach id
@@ -150,8 +169,11 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
                     beach[0].validate_team();
                     beach_name.setText(beach[0].name);
                     beach_health.setText(beach[0].health);
+                    String team_name = beach[0].team.name;
                     beach_team.setText(beach[0].team.name);
+                    set_team_theme(team_name, team_image, frame_layout);
                     uv_index.setText(String.valueOf(beach[0].uv_index.value));
+                    potential_xp.setText(String.valueOf(beach[0].potential_xp));
                 }
             }
 
@@ -184,7 +206,9 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
                             beach[0] = ar.beach;
                             beach_name.setText(beach[0].name);
                             beach_health.setText(beach[0].health);
+                            String team_name = ar.team.name;
                             beach_team.setText(ar.team.name);
+                            set_team_theme(team_name, team_image, frame_layout);
 //                            uv_index.setText(String.valueOf(beach[0].uv_index.value));
                         }
                     }

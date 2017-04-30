@@ -23,6 +23,7 @@ class BeachesController < ApplicationController
     if beach.distance(point) < 1.0
       beach.health = 0.0 if beach.health.nil?
       beach.team = current_user.team if !beach.team_id
+      Rails.logger.debug(current_user.to_json)
       if !current_user.team.nil?
         if beach.team == current_user.team 
           beach.health = beach.health + 1
@@ -35,7 +36,7 @@ class BeachesController < ApplicationController
         beach.health = 0.0 
         beach.team = nil
       end
-      byebug
+      # byebug
       xp = beach.potential_xp
       current_user.xp = 100 if current_user.xp.nil?
       current_user.xp += xp

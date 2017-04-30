@@ -4,5 +4,9 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
 
+
+    <color name="neutral_theme">#757575</color>
+    <color name="zeus_theme">#F5D327</color>
+    <color name="poseidon_theme">#51A7F9</color>
     <color name="black_overlay">#66000000</color>
 </resources>

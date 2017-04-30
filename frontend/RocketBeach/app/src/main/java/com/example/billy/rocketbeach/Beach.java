@@ -8,6 +8,7 @@ class Beach {
     public String health;
     public Team team;
     public UVResponse uv_index;
+    public String potential_xp;
 
     void validate_team(){
         if (team==null){
