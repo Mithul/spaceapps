@@ -20,7 +20,6 @@ for u in ul:
                         all_links.append(a['href'])
                 except Exception as e:
                         print str(e)
-                        pdb.set_trace()
                         continue
 
 big_countries = soup.find_all("div",{"role": "note"})[1:-1]
@@ -40,11 +39,16 @@ for country in big_countries:
                         try:
                                 all_links.append(a['href'])
                         except Exception as e:
-                                continue
+				if(a["class"][1]=='selflink'):
+					continue	
+				continue
 
 lines = []
 skip = 0
-
+filtered_list = []
+for a in all_links:
+	if 'wikimedia' not in a and ':' not in a and '=' not in a and 'cite_note' not in a and 'wiki' in a and 'List' not in a:
+		filtered_list.append(a)
 
 for i,link in enumerate(all_links):
 	print i

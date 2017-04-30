@@ -33,7 +33,7 @@ class TeamsController < ApplicationController
     else
       life = true
     end
-    render json: {user: current_user.except("created_at","update_at"), team: current_user.team, user_alive: life}
+    render json: {user: current_user.attributes.except("created_at","updated_at","encrypted_password", "current_sign_in_at","last_sign_in_at","current_sign_in_ip","last_sign_in_ip","sign_in_count","remember_created_at","reset_password_token","reset_password_sent_at"), team: current_user.team, user_alive: life}
   end
 
   # GET /teams/1
