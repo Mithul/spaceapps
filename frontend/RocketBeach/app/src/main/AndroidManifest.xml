@@ -38,15 +38,9 @@
             android:name=".ShowBeachActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_show_beach"
-            android:theme="@style/FullscreenTheme">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity android:name=".MainActivity">
-
-        </activity>
+            android:theme="@style/FullscreenTheme" />
+        <activity android:name=".LocationAPI23"></activity>
+        <activity android:name=".LocationNormal"></activity>
         <activity android:name=".LocationFiller"></activity>
     </application>
 

@@ -1,15 +1,12 @@
 package com.example.billy.rocketbeach;
 
-import android.*;
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.media.Image;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -26,10 +23,8 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
-import com.pushbots.push.Pushbots;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -40,14 +35,11 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- */
 public class ShowBeachActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
 
     private RocketBeach rocket;
+    public Beach intentBeach;
     private GoogleApiClient googleApiClient;
     private LocationManager locationManager;
     private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 1;
@@ -65,10 +57,6 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
      */
     private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
 
-    /**
-     * Some older devices needs a small delay between UI widget updates
-     * and a change of the status and navigation bar.
-     */
     private static final int UI_ANIMATION_DELAY = 300;
     private final Handler mHideHandler = new Handler();
     private View mContentView;
@@ -146,6 +134,11 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
 
         setContentView(R.layout.activity_show_beach);
 
+        String[] flatBeach = getIntent().getStringArrayExtra("Beach");
+
+        intentBeach = Beach.unflatten(flatBeach);
+
+
         mVisible = true;
 //        latitute = Float.parseFloat(null);
 //        longitude = Float.parseFloat(null);
@@ -178,34 +171,37 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         final Beach[] beach = {null};
         //TODO : Dynamic Beach id
         String beach_id = "1";
-        rocket.getBeachInfo(beach_id, token).enqueue(new Callback<Beach>() {
-            @Override
-            public void onResponse(Call<Beach> call, Response<Beach> response) {
-                if (response.code() == 200) {
-                    beach[0] = response.body();
-                    beach[0].validate_team();
-                    beach_name.setText(beach[0].name);
-                    beach_health.setText(beach[0].health);
-                    String team_name = beach[0].team.name;
-                    beach_team.setText(beach[0].team.name);
-                    set_team_theme(team_name, team_image, frame_layout);
-                    show_warning((float) beach[0].uv_index.value);
-                    uv_index.setText(String.valueOf(beach[0].uv_index.value));
-                    potential_xp.setText(String.valueOf(beach[0].potential_xp));
-                }
-            }
 
-            @Override
-            public void onFailure(Call<Beach> call, Throwable t) {
-                Log.e("ShowBeach",t.toString());
-            }
-        });
+        beach_id = intentBeach.id + "";
+        beach_name.setText(intentBeach.name);
+        beach_health.setText(intentBeach.health);
+        String team_name = intentBeach.team.name;
+        beach_team.setText(intentBeach.team.name);
+        set_team_theme(team_name, team_image, frame_layout);
+        uv_index.setText(String.valueOf(intentBeach.uv_index.value));
+        potential_xp.setText(String.valueOf(intentBeach.potential_xp));
 
-
-
-        // Upon interacting with UI controls, delay any scheduled hide()
-        // operations to prevent the jarring behavior of controls going away
-        // while interacting with the UI.
+//        rocket.getBeachInfo(beach_id, token).enqueue(new Callback<Beach>() {
+//            @Override
+//            public void onResponse(Call<Beach> call, Response<Beach> response) {
+//                if (response.code() == 200) {
+//                    beach[0] = response.body();
+//                    beach[0].validate_team();
+//                    beach_name.setText(beach[0].name);
+//                    beach_health.setText(beach[0].health);
+//                    String team_name = beach[0].team.name;
+//                    beach_team.setText(beach[0].team.name);
+//                    set_team_theme(team_name, team_image, frame_layout);
+//                    uv_index.setText(String.valueOf(beach[0].uv_index.value));
+//                    potential_xp.setText(String.valueOf(beach[0].potential_xp));
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<Beach> call, Throwable t) {
+//                Log.e("RocketBeach",t.toString());
+//            }
+//        });
 
         new Timer().schedule(new TimerTask() {
             @Override
@@ -235,22 +231,25 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
                     @Override
                     public void onResponse(Call<AttackResponse> call, Response<AttackResponse> response) {
                         if (response.code() == 200) {
-                            AttackResponse ar =response.body();
+                            AttackResponse ar = response.body();
                             ar.validate_team();
-                            Log.e("Attack", String.valueOf(ar.status));
-                            beach[0] = ar.beach;
-                            beach_name.setText(beach[0].name);
-                            beach_health.setText(beach[0].health);
-                            String team_name = ar.team.name;
-                            beach_team.setText(ar.team.name);
-                            set_team_theme(team_name, team_image, frame_layout);
+                            if (ar.status) {
+                                beach[0] = ar.beach;
+                                beach_name.setText(beach[0].name);
+                                beach_health.setText(beach[0].health);
+                                String team_name = ar.team.name;
+                                beach_team.setText(ar.team.name);
+                                set_team_theme(team_name, team_image, frame_layout);
+                            } else {
+                                Log.d("RocketBeach", "Cannot attack");
+                            }
 //                            uv_index.setText(String.valueOf(beach[0].uv_index.value));
                         }
                     }
 
                     @Override
                     public void onFailure(Call<AttackResponse> call, Throwable t) {
-                        Log.e("ShowBeach",t.toString());
+                        Log.e("RocketBeach",t.toString());
                     }
                 });
             }
@@ -310,9 +309,6 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
 
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
         delayedHide(100);
     }
 
@@ -389,7 +385,7 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
 
     @Override
     public void onConnectionSuspended(int i) {
-        Log.i(MainActivity.class.getSimpleName(), "Can't connect to Google Play Services!");
+        Log.i(LocationAPI23.class.getSimpleName(), "Can't connect to Google Play Services!");
     }
 
     @Override
