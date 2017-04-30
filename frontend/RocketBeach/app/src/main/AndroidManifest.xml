@@ -30,7 +30,12 @@
         <activity
             android:name=".LoginActivity"
             android:label="@string/title_activity_login">
+            <intent-filter>
 
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity android:name=".TeamActivity" />
         <activity android:name=".ProfileActivity" />
@@ -39,16 +44,10 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_show_beach"
             android:theme="@style/FullscreenTheme">
-            <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
+    </activity>
+    <activity android:name=".MainActivity">
 
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
-        </activity>
-        <activity android:name=".MainActivity">
-
-        </activity>
-
-    </application>
+    </activity>
+</application>
 
 </manifest>

@@ -13,7 +13,7 @@ class Utils {
     static void addToken(@NonNull SharedPreferences preferences, String key, String value) {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(key, value);
-        editor.apply();
+        editor.commit();
     }
 
     static void removeToken(@NonNull SharedPreferences preferences, String key) {
@@ -25,8 +25,8 @@ class Utils {
     static RocketBeach getService() {
         if (rocket == null) {
             rocket = new Retrofit.Builder()
-                    .baseUrl("http://192.168.44.43/")
-//                    .baseUrl("http://rocketbeach.ml/")
+//                    .baseUrl("http://192.168.44.43/")
+                    .baseUrl("http://rocketbeach.ml/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
                     .create(RocketBeach.class);

@@ -38,7 +38,7 @@ interface RocketBeach {
     Call<Beachgoer> registerUserDevice(@Field("device_token") String token, @Header("X-Auth-Token") String auth);
 
     @GET("me")
-    Call<Beachgoer> getMe(@Header("X-Auth-Token") String token);
+    Call<MeDTO> getMe(@Header("X-Auth-Token") String token);
 
     @GET("associate/{id}")
     Call<Void> associateWithTeam(@Path("id") Integer id, @Header("X-Auth-Token") String token);
