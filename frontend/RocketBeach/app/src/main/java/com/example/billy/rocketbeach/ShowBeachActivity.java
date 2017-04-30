@@ -115,13 +115,17 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
     };
 
     private void set_team_theme(String team_name, ImageView team_image, FrameLayout frame_layout){
+        final TextView beach_team = (TextView) findViewById(R.id.beach_team);
         if(team_name.toLowerCase().trim().equals("neutral")) {
+            beach_team.setText("Owner: Unconquered");
             team_image.setImageResource(R.drawable.neutral);
             frame_layout.setBackgroundColor(getResources().getColor(R.color.neutral_theme));
         }else if(team_name.toLowerCase().trim().equals("zeus")) {
+            beach_team.setText("Team: "+team_name);
             team_image.setImageResource(R.drawable.zeus_white);
             frame_layout.setBackgroundColor(getResources().getColor(R.color.zeus_theme));
         }else if(team_name.toLowerCase().trim().equals("poseidon")) {
+            beach_team.setText("Team: "+team_name);
             team_image.setImageResource(R.drawable.poseidon_white);
             frame_layout.setBackgroundColor(getResources().getColor(R.color.poseidon_theme));
         }
@@ -135,7 +139,9 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
         setContentView(R.layout.activity_show_beach);
+        setTitle("Beach Details");
 
         rocket = Utils.getService();
         token = getSharedPreferences("RocketBeach", 0).getString("X-Auth-Token", "7e977b10c81d4b7581a2a106b9fb84dc");
@@ -159,13 +165,9 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         if (flatBeach != null){
             intentBeach = Beach.unflatten(flatBeach);
             beach_id = intentBeach.id + "";
-            beach_name.setText(intentBeach.name);
-            beach_health.setText(intentBeach.health);
+            updateBeachStats(intentBeach);
             String team_name = intentBeach.team.name;
-            beach_team.setText(intentBeach.team.name);
             set_team_theme(team_name, team_image, frame_layout);
-            uv_index.setText(String.valueOf(intentBeach.uv_index.value));
-            potential_xp.setText(String.valueOf(intentBeach.potential_xp));
         }else{
             beach_id = "1";
             rocket.getBeachInfo(beach_id, token).enqueue(new Callback<Beach>() {
@@ -175,7 +177,6 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
                     Beach beach = response.body();
                     updateBeachStats(beach);
                     String team_name = beach.team.name;
-                    beach_team.setText(beach.team.name);
                     set_team_theme(team_name, team_image, frame_layout);
                 }
             }
@@ -235,12 +236,6 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
 
     private void attackBeach(){
         if(!enable_attack) return;
-        final TextView beach_name = (TextView) findViewById(R.id.beach_name);
-        final TextView beach_health = (TextView) findViewById(R.id.beach_health);
-        final TextView beach_team = (TextView) findViewById(R.id.beach_team);
-        final TextView uv_index = (TextView) findViewById(R.id.uv_index);
-        final TextView potential_xp = (TextView) findViewById(R.id.potential_xp);
-        final TextView user_health = (TextView) findViewById(R.id.player_health);
         final ImageView team_image = (ImageView) findViewById(R.id.team_image);
         final FrameLayout frame_layout = (FrameLayout) findViewById(R.id.show_beach_frame);
         token = getSharedPreferences("RocketBeach", 0).getString("X-Auth-Token", "7e977b10c81d4b7581a2a106b9fb84dc");
@@ -264,7 +259,6 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
                     if (ar.status) {
                         updateBeachStats(ar.beach);
                         String team_name = ar.team.name;
-                        beach_team.setText(ar.team.name);
                         set_team_theme(team_name, team_image, frame_layout);
                     } else {
                         Log.d("RocketBeach", "Cannot attack");
@@ -283,23 +277,21 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
     private void updateBeachStats(Beach beach){
         final TextView beach_name = (TextView) findViewById(R.id.beach_name);
         final TextView beach_health = (TextView) findViewById(R.id.beach_health);
-        final TextView beach_team = (TextView) findViewById(R.id.beach_team);
         final TextView uv_index = (TextView) findViewById(R.id.uv_index);
         final TextView potential_xp = (TextView) findViewById(R.id.potential_xp);
-        final TextView user_health = (TextView) findViewById(R.id.player_health);
-        final ImageView team_image = (ImageView) findViewById(R.id.team_image);
-        final FrameLayout frame_layout = (FrameLayout) findViewById(R.id.show_beach_frame);
         beach_name.setText(beach.name);
-        beach_health.setText(beach.health);
-        uv_index.setText(String.valueOf(beach.uv_index.value));
-        updateWarnings(beach.uv_index.value);
+        beach_health.setText(String.valueOf(beach.get_health()));
+        uv_index.setText(String.valueOf(beach.get_uv_value()));
+        potential_xp.setText(String.valueOf(beach.xp_increase));
+//        potential_xp.setText(beach.current_xp);
+        updateWarnings(beach.get_uv_value());
     }
 
     private void updateWarnings(double uv_index){
         final TextView warnings = (TextView)findViewById(R.id.warnings);
         if(uv_index < 4)
             warnings.setText("Beach is safe with low exposure to UV radiation");
-        else if(uv_index >= 4 && uv_index < 8){
+        else if(uv_index >= 4 && uv_index < 8.5){
             warnings.setText("Consider applying some sunscreen, UV Radiations are moderate");
         }else{
             warnings.setText("You are killing yourself in this level of UV radiation");
@@ -310,6 +302,8 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         double health = Double.parseDouble(healths);
         if(health < 20){
             warnings2.setText("Your health is pretty low by prolonged exposure to UV rays. Consider taking rest");
+        }else{
+            warnings2.setText("");
         }
     }
 
@@ -330,7 +324,7 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
             public void onResponse(Call<UpdateHealthResponse> call, Response<UpdateHealthResponse> response) {
                 if (response.code() == 200){
                     UpdateHealthResponse uhr = response.body();
-                    user_health.setText(uhr.health);
+                    user_health.setText(String.valueOf(uhr.get_health()));
                     updateWarnings(uhr.health);
                     boolean alive = uhr.user_alive;
                     if (!alive)

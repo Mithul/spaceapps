@@ -8,7 +8,18 @@ class Beach {
     public String health;
     public Team team;
     public UVResponse uv_index;
-    public String potential_xp;
+    public double xp_increase;
+
+    public double get_uv_value(){
+        if(uv_index!=null)
+            return Math.round(uv_index.value);
+        else
+            return 0;
+    }
+
+    public double get_health(){
+        return Math.round(Float.parseFloat(health));
+    }
 
     void validate_team(){
         if (team==null){
@@ -26,7 +37,7 @@ class Beach {
                 longitude,
                 team.name,
                 uv_index.value + "",
-                potential_xp
+                String.valueOf(xp_increase)
         };
     }
 
@@ -40,7 +51,7 @@ class Beach {
         b.team.name = values[4];
         b.uv_index = new UVResponse();
         b.uv_index.value = Double.parseDouble(values[5]);
-        b.potential_xp = values[6];
+        b.xp_increase = Double.parseDouble(values[6]);
 
         return b;
     }

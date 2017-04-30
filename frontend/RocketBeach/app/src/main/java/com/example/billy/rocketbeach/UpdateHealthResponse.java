@@ -11,4 +11,8 @@ public class UpdateHealthResponse {
     public boolean user_alive;
     public boolean status;
 
+    public double get_health(){
+        return Math.round(Float.parseFloat(health));
+    }
+
 }
