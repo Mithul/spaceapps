@@ -9,6 +9,21 @@ class Beach < ApplicationRecord
 		getDistanceFromLatLonInKm(self.latitude, self.longitude, lat, lon)
 	end
 
+	def potential_xp
+		uv = uv_index[:value] || 0
+		xp = 0
+		if(uv>=0 and uv<3)
+			xp = 100
+		elsif(uv>=3 and uv<6)
+			xp = 50
+		elsif(uv>=6 and uv<8)
+			xp = 25
+		elsif(uv>=8 and uv<11)
+			xp = 12
+		end
+		return xp
+	end
+
 	def uv_index
 		# Rails.logger.debug(cache_key)
 		# Rails.cache.delete("#{cache_key}/")
@@ -24,7 +39,7 @@ class Beach < ApplicationRecord
 			
 			t << Thread.new {
 				appids.each do |appid|
-					url = "http://api.openweathermap.org/v3/uvi/#{self.latitude.round(1)},#{self.longitude.round(1)}/current.json?appid=#{appid}"
+					url = "http://api.openweathermap.org/v3/uvi/#{self.latitude.to_i},#{self.longitude.to_i}/current.json?appid=#{appid}"
 					json_uv = JSON.parse(Net::HTTP.get(URI.parse(url))) 
 					break if !(json_uv.include? "cod" and json_uv["cod"] == 429)
 				end
