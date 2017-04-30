@@ -100,9 +100,8 @@ public class BeachActivity extends AppCompatActivity implements GoogleApiClient.
 
         double[] gps = getIntent().getDoubleArrayExtra("GPS");
         options.put("lat", gps[0] + "");
-        options.put("lon", gps[1] + "");
+        options.put("long", gps[1] + "");
         Log.d("RocketBeach", "Beach " + gps[0] + " " + gps[1]);
-
         getBeachesList(options);
 
         beaches.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -128,6 +127,9 @@ public class BeachActivity extends AppCompatActivity implements GoogleApiClient.
                 Log.d("RocketBeach", response.code() + "");
                 list.clear();
                 list.addAll(response.body());
+                for(Beach b: response.body()) {
+                    Log.d("RocketBeach", b.name);
+                }
                 Log.d("RocketBeach", response.body().size() + " ");
                 adapter.setList(list);
                 beaches.setAdapter(adapter);
@@ -249,12 +251,12 @@ public class BeachActivity extends AppCompatActivity implements GoogleApiClient.
 
     private void updateLocationUI() {
         Log.d("RocketBeach", "Updating UI according to Location");
-        if (mCurrentLocation != null) {
-            Map<String, String> options = new HashMap<>();
-            options.put("lat", mCurrentLocation.getLatitude() + "");
-            options.put("lon", mCurrentLocation.getLongitude() + "");
-            getBeachesList(options);
-        }
+//        if (mCurrentLocation != null) {
+//            Map<String, String> options = new HashMap<>();
+//            options.put("lat", mCurrentLocation.getLatitude() + "");
+//            options.put("long", mCurrentLocation.getLongitude() + "");
+//            getBeachesList(options);
+//        }
     }
 
     protected void stopLocationUpdates() {

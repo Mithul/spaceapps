@@ -82,8 +82,12 @@ public class TeamActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 showProgress(false);
-                Utils.addToken(getSharedPreferences("RocketBeach", 0), "BannerTeam", bannerTeams[item].name);
-                startActivity(new Intent(getApplicationContext(), LocationFiller.class));
+                Utils.addToken(getSharedPreferences("RocketBeach", 0), "Team", bannerTeams[item].name);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    startActivity(new Intent(getApplicationContext(), LocationAPI23.class));
+                } else {
+                    startActivity(new Intent(getApplicationContext(), LocationNormal.class));
+                }
                 finish();
             }
 
