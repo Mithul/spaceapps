@@ -3,6 +3,7 @@ package com.example.billy.rocketbeach;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -24,13 +25,15 @@ public class TeamActivity extends AppCompatActivity {
     View mProgressView;
     Button joinTeamBtn;
 
-    private class Team {
+    RocketBeach api;
+
+    private class BannerTeam {
         int image;
         int id;
         String name;
         String info;
 
-        Team(int id, int image, String name, String info) {
+        BannerTeam(int id, int image, String name, String info) {
             this.id = id;
             this.image = image;
             this.name = name;
@@ -38,26 +41,28 @@ public class TeamActivity extends AppCompatActivity {
         }
     }
 
-    Team[] teams;
+    BannerTeam[] bannerTeams;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.team_affliation);
 
-        teams = new Team[]{
-                new Team(2, R.drawable.zeus, "Team Zeus", "Join the team of the great god of lightning and may he keep his lightning clouds guarding you from the wrath of Helios sun"),
-                new Team(1, R.drawable.poseidon, "Team Poseidon", "Arch nemesis of Helios, Poseidon shall keep you safe in his warm waters")
+        bannerTeams = new BannerTeam[]{
+                new BannerTeam(2, R.drawable.zeus, "Team Zeus", "Join the team of the great god of lightning and may he keep his lightning clouds guarding you from the wrath of Helios sun"),
+                new BannerTeam(1, R.drawable.poseidon, "Team Poseidon", "Arch nemesis of Helios, Poseidon shall keep you safe in his warm waters")
         };
 
         mProgressView = findViewById(R.id.team_progress);
 
         customCarouselView = (CarouselView) findViewById(R.id.teams);
-        customCarouselView.setPageCount(teams.length);
+        customCarouselView.setPageCount(bannerTeams.length);
         // set ViewListener for custom view
         customCarouselView.setViewListener(viewListener);
 
         joinTeamBtn = (Button) findViewById(R.id.join_team);
+
+        api = Utils.getService();
     }
 
     @Override
@@ -70,26 +75,24 @@ public class TeamActivity extends AppCompatActivity {
         checkLogin();
         final int item = customCarouselView.getCurrentItem();
         showProgress(true);
-        Utils.getService()
-                .associateWithTeam(
-                        teams[item].id,
-                        getSharedPreferences("RocketBeach", 0).getString("X-Auth-Token", "")
-                )
-                .enqueue(new Callback<Void>() {
-                    @Override
-                    public void onResponse(Call<Void> call, Response<Void> response) {
-                        showProgress(false);
-                        Utils.addToken(getSharedPreferences("RocketBeach", 0), "Team", teams[item].name);
-                        startActivity(new Intent(getApplicationContext(), LocationFiller.class));
-                        finish();
-                    }
+        api.associateWithTeam(
+                bannerTeams[item].id,
+                getSharedPreferences("RocketBeach", 0).getString("X-Auth-Token", "")
+        ).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                showProgress(false);
+                Utils.addToken(getSharedPreferences("RocketBeach", 0), "BannerTeam", bannerTeams[item].name);
+                startActivity(new Intent(getApplicationContext(), LocationFiller.class));
+                finish();
+            }
 
-                    @Override
-                    public void onFailure(Call<Void> call, Throwable t) {
-                        showProgress(false);
-                        Toast.makeText(getApplicationContext(), "Some problem occured. Try again! " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                showProgress(false);
+                Toast.makeText(getApplicationContext(), "Some problem occured. Try again! " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
 
     }
 
@@ -99,11 +102,11 @@ public class TeamActivity extends AppCompatActivity {
         public View setViewForPosition(final int position) {
             View customView = getLayoutInflater().inflate(R.layout.team, null);
 
-            customView.findViewById(R.id.badge).setBackgroundResource(teams[position].image) ;
+            customView.findViewById(R.id.badge).setBackgroundResource(bannerTeams[position].image) ;
 
             //set view attributes here
-            ((TextView) customView.findViewById(R.id.team_name)).setText(teams[position].name);
-            ((TextView) customView.findViewById(R.id.team_info)).setText(teams[position].info);
+            ((TextView) customView.findViewById(R.id.team_name)).setText(bannerTeams[position].name);
+            ((TextView) customView.findViewById(R.id.team_info)).setText(bannerTeams[position].info);
 
             return customView;
         }
@@ -112,7 +115,11 @@ public class TeamActivity extends AppCompatActivity {
     private void checkLogin() {
         Log.d("RocketBeach", "Checking if already affliated");
         if (getSharedPreferences("RocketBeach", 0).contains("Team")) {
-            startActivity(new Intent(getApplicationContext(), LocationFiller.class));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                startActivity(new Intent(getApplicationContext(), LocationAPI23.class));
+            } else {
+                startActivity(new Intent(getApplicationContext(), LocationNormal.class));
+            }
             finish();
         }
     }

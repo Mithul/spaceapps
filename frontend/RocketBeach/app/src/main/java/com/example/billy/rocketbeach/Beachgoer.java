@@ -14,4 +14,5 @@ class Beachgoer {
 
 class MeDTO {
     Beachgoer user;
+    Team team;
 }

@@ -32,7 +32,7 @@ public class ProfileActivity extends AppCompatActivity {
         profile = builder.setPhoto(R.mipmap.profile_picture)
                 .setCover(R.mipmap.profile_cover)
                 .setName("Loading...")
-                .setSubTitle(preferences.getString("Team", "Team Unknown"))
+                .setSubTitle(preferences.getString("BannerTeam", "BannerTeam Unknown"))
                 .setBrief("20HP")
                 .build();
 

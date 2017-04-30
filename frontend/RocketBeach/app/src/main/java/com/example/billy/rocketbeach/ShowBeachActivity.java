@@ -424,7 +424,9 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
 
     @Override
     protected void onStop() {
-        googleApiClient.disconnect();
+        if (googleApiClient != null) {
+            googleApiClient.disconnect();
+        }
         super.onStop();
     }
 
@@ -437,14 +439,14 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
             Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
 
             double lat = lastLocation.getLatitude(), lon = lastLocation.getLongitude();
-            Log.v("Biljith", lon + " " + lat);
+            Log.d("RocketBeach", lon + " " + lat);
             Toast.makeText(this, lon+" "+lat, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-        Log.i(LocationAPI23.class.getSimpleName(), "Can't connect to Google Play Services!");
+        Log.d("RocketBeach", "Can't connect to Google Play Services!");
     }
 
     @Override

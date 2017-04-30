@@ -2,118 +2,150 @@ package com.example.billy.rocketbeach;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.pm.PackageManager;
-import android.location.Criteria;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Build;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 
 import java.util.List;
 
 
-public class LocationNormal extends Activity implements LocationListener {
-    private static final String TAG = "LocationNormal";
-    private static final String[] S = {"Out of Service",
-            "Temporarily Unavailable", "Available"};
+public class LocationNormal extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener  {
 
     private TextView output;
     private LocationManager locationManager;
-    private String bestProvider;
+    private boolean mGPSEnabled = false;
+    private GoogleApiClient googleApiClient;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location_demo);
 
-        // Get the output UI
-        output = (TextView) findViewById(R.id.output);
 
         // Get the location manager
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        // List all providers:
-        List<String> providers = locationManager.getAllProviders();
-        for (String provider : providers) {
-            printProvider(provider);
+        mGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
+//        Criteria criteria = new Criteria();
+//        String bestProvider = locationManager.getBestProvider(criteria, false);
+//        output.append("\n\nBEST Provider:\n");
+//        printProvider(bestProvider);
+//
+//        output.append("\n\nLocations (starting with last known):");
+//
+//        Location location = locationManager.getLastKnownLocation(bestProvider);
+//        printLocation(location);
+
+        if (!mGPSEnabled)
+            switchOnGPS();
+
+        googleApiClient = new GoogleApiClient.Builder(this, this, this).addApi(LocationServices.API).build();
+
+    }
+
+    public void switchOnGPS() {
+        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        startActivityForResult(intent, 123);
+//        AlertDialog.Builder alertDialog = new AlertDialog.Builder( getParent().getApplicationContext())
+//                .setTitle("GPS Not Enabled")
+//                .setMessage("Do you wants to turn On GPS")
+//                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//                        startActivity(intent);
+//                    }
+//                })
+//                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.cancel();
+//                    }
+//                });
+//
+//
+//        alertDialog.show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 123) {
+            // Make sure the request was successful
+            Log.d("RocketBeach", "Return from settings");
+            mGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            if (mGPSEnabled)
+                googleApiClient.connect();
         }
 
-
-        Criteria criteria = new Criteria();
-        bestProvider = locationManager.getBestProvider(criteria, false);
-        output.append("\n\nBEST Provider:\n");
-        printProvider(bestProvider);
-
-        output.append("\n\nLocations (starting with last known):");
-
-        Location location = locationManager.getLastKnownLocation(bestProvider);
-        printLocation(location);
-    }
-
-    /** Register for the updates when Activity is in foreground */
-    @Override
-    protected void onResume() {
-        super.onResume();
-        re();
-    }
-
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    public void re() throws SecurityException {
-        locationManager.requestLocationUpdates(bestProvider, 20000, 1, this);
-    }
-
-
-    /** Stop the updates when Activity is paused */
-    @Override
-    protected void onPause() {
-        super.onPause();
-        locationManager.removeUpdates(this);
     }
 
     @Override
-    public void onLocationChanged(Location location) {
-        printLocation(location);
+    protected void onStart() {
+        super.onStart();
+        if (mGPSEnabled) {
+            if (googleApiClient != null) {
+                googleApiClient.connect();
+            }
+        }
     }
 
     @Override
-    public void onProviderDisabled(String provider) {
-        // let okProvider be bestProvider
-        // re-register for updates
-        output.append("\n\nProvider Disabled: " + provider);
+    protected void onStop() {
+        googleApiClient.disconnect();
+        super.onStop();
     }
 
     @Override
-    public void onProviderEnabled(String provider) {
-        // is provider better than bestProvider?
-        // is yes, bestProvider = provider
-        output.append("\n\nProvider Enabled: " + provider);
-        Location location = locationManager.getLastKnownLocation(provider);
-        printLocation(location);
+    public void onConnected(Bundle bundle) {
+        Log.d("RocketBeach", "Connected to Google Play Services!");
+
+        Intent gotoBeaches = new Intent(getApplicationContext(), BeachActivity.class);
+
+        double lat, lon;
+        Location lastLocation = getLoc();
+        if (lastLocation == null) {
+            lat = 13.45;
+            lon = 2.3;
+        } else {
+            lat = lastLocation.getLatitude();
+            lon = lastLocation.getLongitude();
+        }
+        Log.d("RocketBeach", "LocationNormal " + lat + " " + lon);
+
+        gotoBeaches.putExtra("GPS", new double[]{lat, lon});
+
+        startActivity(gotoBeaches);
+        finish();
+    }
+
+    @TargetApi(value = Build.VERSION_CODES.LOLLIPOP)
+    public Location getLoc() throws SecurityException {
+        return LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
     }
 
     @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        output.append("\n\nProvider Status Changed: " + provider + ", Status="
-                + S[status] + ", Extras=" + extras);
+    public void onConnectionSuspended(int i) {
+
     }
 
-    private void printProvider(String provider) {
-        LocationProvider info = locationManager.getProvider(provider);
-        output.append(provider + "\n\n");
-        output.append(info.toString() + "\n\n");
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.d("RocketBeach", "Can't connect to Google Play Services!");
     }
 
-    private void printLocation(Location location) {
-        if (location == null)
-            output.append("\nLocation[unknown]\n\n");
-        else
-            output.append("\n\n" + location.toString());
-    }
 
 }

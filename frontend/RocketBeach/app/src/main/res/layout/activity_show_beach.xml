@@ -135,7 +135,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:keepScreenOn="true"
-                android:text="Potential XP :"
+                android:text="Potential XP: "
                 android:textColor="#fff"
                 android:textSize="20sp"
                 android:textStyle="bold" />
