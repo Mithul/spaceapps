@@ -2,10 +2,17 @@ class UserController < ApplicationController
   before_action :authenticate
 
   def get_health
-  	render json: {health: current_user.health}
+  	life = false
+  	if (current_user.last_death - DateTime.current) > 3
+  		life = true 
+  		current_user.health = 100
+  		current_user.save
+  	end
+  	render json: {user_alive: life, health: current_user.health}
   end
 
   def update_health
+  	life = true
   	if params[:id]
       beach = Beach.where(id: params[:id]).first
       if !beach
@@ -29,15 +36,19 @@ class UserController < ApplicationController
     current_user.health = current_user.health - uv
     current_user.health = 0.00 if current_user.health < 0.00
     current_user.save
+    if current_user.health <= 0.00
+    	current_user.last_death = DateTime.now
+    	life = false
+    end
     Rails.logger.info(beach.errors.inspect) 
-    render json: {message: "Health update successfull", health:current_user.health, status: true}
+    render json: {message: "Health update successfull", health:current_user.health, user_alive: life,status: true}
 
   end
 
 def reset_health
 	current_user.health = 100
 	current_user.save
-	render jason: {message: "Health reset to 100", health: current_user.health, status: true}
+	render json: {message: "Health reset to 100", health: current_user.health, status: true}
 end
 
 
