@@ -305,6 +305,13 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
             warnings.setText("You are killing yourself in this level of UV radiation");
         }
     }
+    private void updateWarnings(String healths){
+        final TextView warnings2 = (TextView)findViewById(R.id.warnings2);
+        double health = Double.parseDouble(healths);
+        if(health < 20){
+            warnings2.setText("Your health is pretty low by prolonged exposure to UV rays. Consider taking rest");
+        }
+    }
 
     private void updateUserHealth(){
         Map<String, String> options = new HashMap<>();
@@ -324,6 +331,7 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
                 if (response.code() == 200){
                     UpdateHealthResponse uhr = response.body();
                     user_health.setText(uhr.health);
+                    updateWarnings(uhr.health);
                     boolean alive = uhr.user_alive;
                     if (!alive)
                         Toast.makeText(getApplicationContext(), "You are dead and can no longer conquer beaches", Toast.LENGTH_LONG).show();

@@ -51,12 +51,15 @@ class UserController < ApplicationController
     decrement = uv+hab.depth
     current_user.health = current_user.health - decrement
     current_user.health = 0.00 if current_user.health < 0.00
+
+
     current_user.save
     if current_user.health <= 0.00
-    	current_user.last_death = DateTime.now
-    	life = false
+      current_user.last_death = DateTime.now
+      life = false
     end 
-    render json: {message: "Health update successfull", health:current_user.health, user_alive: life,status: true}
+    render json: {message: "Health update successful", health:current_user.health, user_alive: life,status: true}
+    current_user.send_push_notification "Your health is low due. Consider taking rest" if current_user.health < 20 and current_user.health > 0
 
   end
 
