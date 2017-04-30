@@ -33,7 +33,8 @@ class UserController < ApplicationController
     point = [params[:lat].to_f, params[:long].to_f]
     beach = Beach.all.sort_by{|b| b.distance(point)}.first if !params[:id]
     current_user.health = 100.0 if current_user.health.nil?
-    
+    hab = Hab.where("name like ?","%#{beach.name}%").first
+    hab.depth ||= 0
     if beach.distance(point) < 1.0
       uv = beach.uv_index
       uv = (uv[:value]/12) * 10
@@ -41,8 +42,8 @@ class UserController < ApplicationController
     else
       uv = 0.01
     end
-    
-    current_user.health = current_user.health - uv
+    decrement = uv+hab
+    current_user.health = current_user.health - decrement
     current_user.health = 0.00 if current_user.health < 0.00
     current_user.save
     if current_user.health <= 0.00
