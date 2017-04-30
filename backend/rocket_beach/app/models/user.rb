@@ -17,4 +17,5 @@ class User < ApplicationRecord
     SecureRandom.uuid.gsub(/\-/,'')
   end
 
+  belongs_to :team, optional: true
 end

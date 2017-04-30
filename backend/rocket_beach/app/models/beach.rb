@@ -1,4 +1,7 @@
 class Beach < ApplicationRecord
+
+	belongs_to :team, optional: true
+
 	def distance point=nil
 		point = [0,0] if point.nil?
 		lat = point[0]
@@ -69,11 +72,11 @@ Rails.logger.debug([json_uv, json_weather])
 	    Math.sin(dLon/2) * Math.sin(dLon/2)
 	    c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
 	    d = r * c
-	    
 		return d
 	end
 
 	def deg2rad(deg) 
 		return deg * (Math::PI/180)
 	end
+
 end

@@ -2,10 +2,47 @@ class BeachesController < ApplicationController
   before_action :set_beach, only: [:show, :edit, :update, :destroy]
   before_action :authenticate
 
+  # before_filter :check_lat_long, only[:attack, :search]
+
   # GET /beaches
   # GET /beaches.json
   def index
     @beaches = Beach.all
+  end
+
+  def attack
+    if params[:id]
+      beach = Beach.where(id: params[:id]).first
+      if !beach
+        render json: {message: "Beach not found", status: false}
+        return
+      end
+    end
+    point = [params[:lat].to_f, params[:long].to_f]
+    beach = Beach.all.sort_by{|b| b.distance(point)}.first if !params[:id]
+    # Rails.logger.debug(beach.to_json)
+    # Rails.logger.debug(beach.distance(point))
+    if beach.distance(point) < 1.0
+      beach.health = 0.0 if beach.health.nil?
+      beach.team = current_user.team if !beach.team_id
+      if beach.team == current_user.team
+        #TODO change health algo
+        beach.health = beach.health + 1
+      else
+        beach.health = beach.health - 1          
+      end
+      beach.health = 100 if beach.health > 100
+      if beach.health < 0
+        beach.health = 0.0 
+        beach.team = nil
+      end
+      beach.save
+      Rails.logger.info(beach.errors.inspect) 
+      render json: {beach: JSON.parse(beach.to_json), team: JSON.parse(beach.team.to_json), status: true}
+    else
+      render json: {message: "Cannot attack beach, Go nearer", status: false}
+      return
+    end
   end
 
   def search
@@ -15,24 +52,11 @@ class BeachesController < ApplicationController
     begin
       #If lat/long given
       if params[:lat] or params[:long]
-        #If only one is given
         Rails.logger.debug("LAT/LONG")
-        if !(params[:lat] and params[:long])
-          init = false
-          @beaches = []
-          message = "Please specify both lat and long"
-          flash[:error] = message
-          respond_to do |format|
-            format.html {render 'index', :status => 422  }
-            format.json {render :json => {status: :error, message: message}, :status => 422 }
-          end
-        #If both are given
-        else
-          init = false
-          point = [params[:lat].to_f, params[:long].to_f]
-          #Sort by distance for beaches < 10km away
-          @beaches = Beach.all.select{|b| b.distance(point) < 1000}
-        end
+        init = false
+        point = [params[:lat].to_f, params[:long].to_f]
+        #Sort by distance for beaches < 10km away
+        @beaches = Beach.all.select{|b| b.distance(point) < 1000}
       end
       if params[:address]
         init = false
@@ -121,9 +145,7 @@ class BeachesController < ApplicationController
   end
 
   def authenticate_token
-    authenticate_with_http_token do |token, options|
-      User.find_by(auth_token: token)
-    end
+    return current_user
   end
 
   def render_unauthorized
@@ -132,6 +154,17 @@ class BeachesController < ApplicationController
   end 
 	
   private
+
+    def check_lat_long
+      if !(params[:lat] and params[:long])
+          message = "Please specify both lat and long"
+          flash[:error] = message
+          respond_to do |format|
+            format.html {render 'index', :status => 422  }
+            format.json {render :json => {status: :error, message: message}, :status => 422 }
+          end
+      end
+    end
     # Use callbacks to share common setup or constraints between actions.
     def set_beach
       @beach = Beach.find(params[:id])
