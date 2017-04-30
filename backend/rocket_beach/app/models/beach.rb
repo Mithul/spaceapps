@@ -41,6 +41,7 @@ class Beach < ApplicationRecord
 			}
 
 			t.each{|thread| thread.join}
+Rails.logger.debug([json_uv, json_weather])
 
 			Rails.logger.debug([json_uv, json_weather])
 			if json_uv["data"] and json_weather["clouds"]
