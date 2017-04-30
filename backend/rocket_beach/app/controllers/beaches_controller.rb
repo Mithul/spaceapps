@@ -61,7 +61,7 @@ class BeachesController < ApplicationController
         init = false
         point = [params[:lat].to_f, params[:long].to_f]
         #Sort by distance for beaches < 10km away
-        @beaches = Beach.all.select{|b| b.distance(point) < 1000}
+        @beaches = Beach.all
       end
       if params[:address]
         init = false

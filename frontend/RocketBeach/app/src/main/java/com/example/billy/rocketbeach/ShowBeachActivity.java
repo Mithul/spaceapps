@@ -48,6 +48,9 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
     private double latitute, longitude;
     boolean enable_attack=false;
     String token;
+    Timer poll_health_timer;
+
+    String beach_id;
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -159,18 +162,16 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
 
         final Beach[] beach = {null};
 
-        String beach_id;
         String[] flatBeach = getIntent().getStringArrayExtra("Beach");
 
         if (flatBeach != null){
             intentBeach = Beach.unflatten(flatBeach);
             beach_id = intentBeach.id + "";
-            updateBeachStats(intentBeach);
-            String team_name = intentBeach.team.name;
-            set_team_theme(team_name, team_image, frame_layout);
+            Log.e("Beach id", beach_id);
         }else{
             beach_id = "1";
-            rocket.getBeachInfo(beach_id, token).enqueue(new Callback<Beach>() {
+        }
+        rocket.getBeachInfo(beach_id, token).enqueue(new Callback<Beach>() {
             @Override
             public void onResponse(Call<Beach> call, Response<Beach> response) {
                 if (response.code() == 200) {
@@ -186,8 +187,6 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
                 Log.e("RocketBeach",t.toString());
             }
         });
-
-        }
 
 
         mVisible = true;
@@ -205,8 +204,8 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
             }
         });
 
-
-        new Timer().schedule(new TimerTask() {
+        poll_health_timer = new Timer();
+        poll_health_timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 runOnUiThread(new Runnable() {
@@ -250,7 +249,7 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         longitude = -74.2;
         options.put("lat", String.valueOf(latitute));
         options.put("long", String.valueOf(longitude));
-        rocket.attack("1", token, options).enqueue(new Callback<AttackResponse>() {
+        rocket.attack(beach_id, token, options).enqueue(new Callback<AttackResponse>() {
             @Override
             public void onResponse(Call<AttackResponse> call, Response<AttackResponse> response) {
                 if (response.code() == 200) {
@@ -282,7 +281,8 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         beach_name.setText(beach.name);
         beach_health.setText(String.valueOf(beach.get_health()));
         uv_index.setText(String.valueOf(beach.get_uv_value()));
-        potential_xp.setText(String.valueOf(beach.xp_increase));
+        potential_xp.setText(String.valueOf(beach.potential_xp));
+        beach.validate_team();
 //        potential_xp.setText(beach.current_xp);
         updateWarnings(beach.get_uv_value());
     }
@@ -414,6 +414,18 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         if (googleApiClient != null) {
             googleApiClient.connect();
         }
+        poll_health_timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateUserHealth();
+                        attackBeach();
+                    }
+                });
+            }
+        },0,10000);
     }
 
     @Override
@@ -422,6 +434,7 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
             googleApiClient.disconnect();
         }
         super.onStop();
+        poll_health_timer.cancel();
     }
 
     @Override

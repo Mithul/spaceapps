@@ -118,6 +118,7 @@ public class BeachActivity extends AppCompatActivity implements GoogleApiClient.
                         b.name,
                         Toast.LENGTH_SHORT
                 ).show();
+//                Log.e("BeachAct",b.health);
                 showBeach.putExtra("Beach", b.flatten());
                 startActivity(showBeach);
             }
@@ -151,7 +152,7 @@ public class BeachActivity extends AppCompatActivity implements GoogleApiClient.
                 list.clear();
                 list.addAll(response.body());
                 for(Beach b: response.body()) {
-                    Log.d("RocketBeach", b.name);
+//                    Log.d("RocketBeach", b.name);
                 }
                 Log.d("RocketBeach", response.body().size() + " ");
                 adapter.setList(list);
