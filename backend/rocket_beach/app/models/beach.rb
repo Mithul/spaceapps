@@ -39,7 +39,7 @@ class Beach < ApplicationRecord
 			
 			t << Thread.new {
 				appids.each do |appid|
-					url = "http://api.openweathermap.org/v3/uvi/#{self.latitude.round(1)},#{self.longitude.round(1)}/current.json?appid=#{appid}"
+					url = "http://api.openweathermap.org/v3/uvi/#{self.latitude.to_i},#{self.longitude.to_i}/current.json?appid=#{appid}"
 					json_uv = JSON.parse(Net::HTTP.get(URI.parse(url))) 
 					break if !(json_uv.include? "cod" and json_uv["cod"] == 429)
 				end

@@ -5,5 +5,14 @@ class Beach {
     public String name;
     public String latitude;
     public String longitude;
+    public String health;
+    public Team team;
     public UVResponse uv_index;
+
+    void validate_team(){
+        if (team==null){
+            team = new Team();
+            team.name = "Neutral";
+        }
+    }
 }

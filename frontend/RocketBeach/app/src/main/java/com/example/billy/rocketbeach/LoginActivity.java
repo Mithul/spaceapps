@@ -140,7 +140,7 @@ public class LoginActivity extends AppCompatActivity {
                         Beachgoer person = response.body();
 //                        Log.e("Debug_GCM",response.body().toString());
 //                        Log.e("Debug_GCM",person.auth_token);
-                        Utils.makeToken(preferences, "X-Auth-Token", person.auth_token);
+                        Utils.addToken(preferences, "X-Auth-Token", person.auth_token);
                         final String token = getSharedPreferences("RocketBeach", 0).getString("X-Auth-Token", "");
 //                        Log.e("Debug_GCM",token);
                         String registrationId = Pushbots.sharedInstance().getGCMRegistrationId();
