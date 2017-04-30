@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -69,6 +70,7 @@ public class BeachActivity extends AppCompatActivity implements GoogleApiClient.
 
     ListView beaches;
     BeachAdapter adapter;
+    TextView empty;
 
     RocketBeach service;
 
@@ -97,6 +99,8 @@ public class BeachActivity extends AppCompatActivity implements GoogleApiClient.
         adapter = new BeachAdapter(list);
         beaches.setAdapter(adapter);
 
+        beaches.setEmptyView(empty);
+
         final Intent showBeach = new Intent(getApplicationContext(), ShowBeachActivity.class);
 
         service = Utils.getService();
@@ -122,6 +126,8 @@ public class BeachActivity extends AppCompatActivity implements GoogleApiClient.
                 startActivity(showBeach);
             }
         });
+
+        empty = (TextView) findViewById(R.id.empty);
     }
 
     @Override
