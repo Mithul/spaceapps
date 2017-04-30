@@ -6,11 +6,14 @@ import android.content.IntentSender;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -42,7 +45,7 @@ public class BeachActivity extends AppCompatActivity implements GoogleApiClient.
 
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
 
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 60000;
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 160000;
 
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
@@ -76,14 +79,16 @@ public class BeachActivity extends AppCompatActivity implements GoogleApiClient.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_beach);
 
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setIcon(R.drawable.beach_conquest);
+        }
         mRequestingLocationUpdates = false;
         mLastUpdateTime = "";
 
-        // Update values using data stored in the Bundle.
         updateValuesFromBundle(savedInstanceState);
 
-        // Kick off the process of building the GoogleApiClient, LocationRequest, and
-        // LocationSettingsRequest objects.
         buildGoogleApiClient();
         createLocationRequest();
         buildLocationSettingsRequest();
@@ -118,6 +123,24 @@ public class BeachActivity extends AppCompatActivity implements GoogleApiClient.
             }
         });
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.profile_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.goto_profile:
+                startActivity(new Intent(getApplicationContext(), ProfileActivity.class));
+                break;
+        }
+        return true;
+    }
+
 
     public void getBeachesList(Map<String, String> options) {
         String token = getSharedPreferences("RocketBeach", 0).getString("X-Auth-Token", "");
@@ -196,7 +219,7 @@ public class BeachActivity extends AppCompatActivity implements GoogleApiClient.
                     case Activity.RESULT_CANCELED:
                         Log.i(TAG, "User chose not to make required location settings changes.");
                         mRequestingLocationUpdates = false;
-                        updateUI();
+                        updateLocationUI();
                         break;
                 }
                 break;
@@ -213,19 +236,17 @@ public class BeachActivity extends AppCompatActivity implements GoogleApiClient.
                 final Status status = locationSettingsResult.getStatus();
                 switch (status.getStatusCode()) {
                     case LocationSettingsStatusCodes.SUCCESS:
-                        Log.i(TAG, "All location settings are satisfied.");
+                        Log.d(TAG, "All location settings are satisfied.");
                         LocationServices.FusedLocationApi.requestLocationUpdates(
                                 mGoogleApiClient, mLocationRequest, BeachActivity.this);
                         break;
                     case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                        Log.i(TAG, "Location settings are not satisfied. Attempting to upgrade " +
+                        Log.d(TAG, "Location settings are not satisfied. Attempting to upgrade " +
                                 "location settings ");
                         try {
-                            // Show the dialog by calling startResolutionForResult(), and check the
-                            // result in onActivityResult().
                             status.startResolutionForResult(BeachActivity.this, REQUEST_CHECK_SETTINGS);
                         } catch (IntentSender.SendIntentException e) {
-                            Log.i(TAG, "PendingIntent unable to execute request.");
+                            Log.d(TAG, "PendingIntent unable to execute request.");
                         }
                         break;
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
@@ -235,18 +256,10 @@ public class BeachActivity extends AppCompatActivity implements GoogleApiClient.
                         Toast.makeText(BeachActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                         mRequestingLocationUpdates = false;
                 }
-                updateUI();
+                updateLocationUI();
             }
         });
 
-    }
-
-    /**
-     * Updates all UI fields.
-     */
-    private void updateUI() {
-//        setButtonsEnabledState();
-        updateLocationUI();
     }
 
     private void updateLocationUI() {

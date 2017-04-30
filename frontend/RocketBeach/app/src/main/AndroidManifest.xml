@@ -43,7 +43,7 @@
             android:label="@string/app_name"
             android:theme="@style/FullscreenTheme" >
         </activity>
-        <activity android:name=".LocationAPI23" />
+            <activity android:name=".LocationAPI23" />
         <activity android:name=".LocationNormal" />
         <activity android:name=".LocationFiller" />
     </application>

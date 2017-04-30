@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Rocket Beach</string>
+    <string name="app_name">Beach Conquest</string>
     <string name="title_activity_login">Sign in</string>
 
     <!-- Strings related to login -->
