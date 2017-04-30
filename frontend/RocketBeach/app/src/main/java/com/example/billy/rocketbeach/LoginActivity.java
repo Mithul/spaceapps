@@ -42,7 +42,6 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         preferences = getSharedPreferences("RocketBeach", 0);
-
         rocket = Utils.getService();
         // Set up the login form.
         mEmailView = (EditText) findViewById(R.id.email);
@@ -78,6 +77,18 @@ public class LoginActivity extends AppCompatActivity {
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        checkLogin();
+    }
+
+    private void checkLogin() {
+        if (preferences.contains("X-Auth-Token")) {
+            startActivity(new Intent(getApplicationContext(), TeamActivity.class));
+        }
     }
 
     private void attemptLogin() {
@@ -119,7 +130,7 @@ public class LoginActivity extends AppCompatActivity {
                     if (response.code() == 200 && response.body().message == null) {
                         showProgress(false);
                         Beachgoer person = response.body();
-                        Utils.makeToken(preferences, "X-Auth-Token", person.auth_token);
+                        Utils.addToken(preferences, "X-Auth-Token", person.auth_token);
                         startActivity(new Intent(getApplicationContext(), TeamActivity.class));
                     }
                 }
@@ -175,7 +186,7 @@ public class LoginActivity extends AppCompatActivity {
                     if (response.code() == 201) {
                         Beachgoer token = response.body();
                         Log.d("TEST", token.auth_token);
-                        Utils.makeToken(preferences, "X-Auth-Token", token.auth_token);
+                        Utils.addToken(preferences, "X-Auth-Token", token.auth_token);
                         startActivity(new Intent(getApplicationContext(), TeamActivity.class));
                     } else {
                         mEmailView.setError("Some problem occured");
@@ -203,9 +214,6 @@ public class LoginActivity extends AppCompatActivity {
         return password.length() >= 6;
     }
 
-    /**
-     * Shows the progress UI and hides the login form.
-     */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
