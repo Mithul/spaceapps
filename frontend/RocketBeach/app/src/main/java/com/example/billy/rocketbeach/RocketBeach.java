@@ -1,8 +1,5 @@
 package com.example.billy.rocketbeach;
 
-
-import org.json.JSONObject;
-
 import java.util.List;
 import java.util.Map;
 
@@ -29,4 +26,7 @@ interface RocketBeach {
     @FormUrlEncoded
     @POST("register_device")
     Call<Beachgoer> registerUserDevice(@Field("device_token") String token, @Header("X-Auth-Token") String auth);
+
+    @GET("me")
+    Call<Beachgoer> getMe(@Header("X-Auth-Token") String token);
 }
