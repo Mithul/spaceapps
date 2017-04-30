@@ -20,13 +20,10 @@ class BeachesController < ApplicationController
     end
     point = [params[:lat].to_f, params[:long].to_f]
     beach = Beach.all.sort_by{|b| b.distance(point)}.first if !params[:id]
-    # Rails.logger.debug(beach.to_json)
-    # Rails.logger.debug(beach.distance(point))
     if beach.distance(point) < 1.0
       beach.health = 0.0 if beach.health.nil?
       beach.team = current_user.team if !beach.team_id
       if beach.team == current_user.team
-        #TODO change health algo
         beach.health = beach.health + 1
       else
         beach.health = beach.health - 1          
