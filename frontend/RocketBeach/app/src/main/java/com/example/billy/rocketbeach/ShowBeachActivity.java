@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -45,6 +46,8 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
     private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 1;
     private static final int RC_LOCATION_CONTACTS_PERM = 124;
     private double latitute, longitude;
+    boolean enable_attack=false;
+    String token;
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -134,9 +137,56 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
 
         setContentView(R.layout.activity_show_beach);
 
+        rocket = Utils.getService();
+        token = getSharedPreferences("RocketBeach", 0).getString("X-Auth-Token", "7e977b10c81d4b7581a2a106b9fb84dc");
+
+        final TextView beach_name = (TextView) findViewById(R.id.beach_name);
+        final TextView beach_health = (TextView) findViewById(R.id.beach_health);
+        final TextView beach_team = (TextView) findViewById(R.id.beach_team);
+        final TextView uv_index = (TextView) findViewById(R.id.uv_index);
+        final TextView potential_xp = (TextView) findViewById(R.id.potential_xp);
+        final TextView user_health = (TextView) findViewById(R.id.player_health);
+        final ImageView team_image = (ImageView) findViewById(R.id.team_image);
+        final FrameLayout frame_layout = (FrameLayout) findViewById(R.id.show_beach_frame);
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        locationAndContactsTask();
+
+        final Beach[] beach = {null};
+
+        String beach_id;
         String[] flatBeach = getIntent().getStringArrayExtra("Beach");
 
-        intentBeach = Beach.unflatten(flatBeach);
+        if (flatBeach != null){
+            intentBeach = Beach.unflatten(flatBeach);
+            beach_id = intentBeach.id + "";
+            beach_name.setText(intentBeach.name);
+            beach_health.setText(intentBeach.health);
+            String team_name = intentBeach.team.name;
+            beach_team.setText(intentBeach.team.name);
+            set_team_theme(team_name, team_image, frame_layout);
+            uv_index.setText(String.valueOf(intentBeach.uv_index.value));
+            potential_xp.setText(String.valueOf(intentBeach.potential_xp));
+        }else{
+            beach_id = "1";
+            rocket.getBeachInfo(beach_id, token).enqueue(new Callback<Beach>() {
+            @Override
+            public void onResponse(Call<Beach> call, Response<Beach> response) {
+                if (response.code() == 200) {
+                    Beach beach = response.body();
+                    updateBeachStats(beach);
+                    String team_name = beach.team.name;
+                    beach_team.setText(beach.team.name);
+                    set_team_theme(team_name, team_image, frame_layout);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Beach> call, Throwable t) {
+                Log.e("RocketBeach",t.toString());
+            }
+        });
+
+        }
 
 
         mVisible = true;
@@ -154,54 +204,6 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
             }
         });
 
-        rocket = Utils.getService();
-        final String token = getSharedPreferences("RocketBeach", 0).getString("X-Auth-Token", "7e977b10c81d4b7581a2a106b9fb84dc");
-
-        final TextView beach_name = (TextView)findViewById(R.id.beach_name);
-        final TextView beach_health = (TextView)findViewById(R.id.beach_health);
-        final TextView beach_team = (TextView)findViewById(R.id.beach_team);
-        final TextView uv_index = (TextView)findViewById(R.id.uv_index);
-        final TextView potential_xp = (TextView)findViewById(R.id.potential_xp);
-        final TextView user_health = (TextView)findViewById(R.id.player_health);
-        final ImageView team_image = (ImageView) findViewById(R.id.team_image);
-        final FrameLayout frame_layout = (FrameLayout) findViewById(R.id.show_beach_frame);
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        locationAndContactsTask();
-
-        final Beach[] beach = {null};
-        //TODO : Dynamic Beach id
-        String beach_id = "1";
-
-        beach_id = intentBeach.id + "";
-        beach_name.setText(intentBeach.name);
-        beach_health.setText(intentBeach.health);
-        String team_name = intentBeach.team.name;
-        beach_team.setText(intentBeach.team.name);
-        set_team_theme(team_name, team_image, frame_layout);
-        uv_index.setText(String.valueOf(intentBeach.uv_index.value));
-        potential_xp.setText(String.valueOf(intentBeach.potential_xp));
-
-//        rocket.getBeachInfo(beach_id, token).enqueue(new Callback<Beach>() {
-//            @Override
-//            public void onResponse(Call<Beach> call, Response<Beach> response) {
-//                if (response.code() == 200) {
-//                    beach[0] = response.body();
-//                    beach[0].validate_team();
-//                    beach_name.setText(beach[0].name);
-//                    beach_health.setText(beach[0].health);
-//                    String team_name = beach[0].team.name;
-//                    beach_team.setText(beach[0].team.name);
-//                    set_team_theme(team_name, team_image, frame_layout);
-//                    uv_index.setText(String.valueOf(beach[0].uv_index.value));
-//                    potential_xp.setText(String.valueOf(beach[0].potential_xp));
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<Beach> call, Throwable t) {
-//                Log.e("RocketBeach",t.toString());
-//            }
-//        });
 
         new Timer().schedule(new TimerTask() {
             @Override
@@ -210,51 +212,98 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
                     @Override
                     public void run() {
                         updateUserHealth();
+                        attackBeach();
                     }
                 });
             }
         },0,10000);
 
+        final Button attack_button = (Button) findViewById(R.id.attack_button);
         findViewById(R.id.attack_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Map<String, String> options = new HashMap<>();
-                locationAndContactsTask();
-                //TODO : remove hardcoded location
-                Log.e("Location", String.valueOf(latitute));
-                Log.e("Location", String.valueOf(longitude));
-                latitute = 40.7;
-                longitude = -74.2;
-                options.put("lat", String.valueOf(latitute));
-                options.put("long", String.valueOf(longitude));
-                rocket.attack("1", token, options).enqueue(new Callback<AttackResponse>() {
-                    @Override
-                    public void onResponse(Call<AttackResponse> call, Response<AttackResponse> response) {
-                        if (response.code() == 200) {
-                            AttackResponse ar = response.body();
-                            ar.validate_team();
-                            if (ar.status) {
-                                beach[0] = ar.beach;
-                                beach_name.setText(beach[0].name);
-                                beach_health.setText(beach[0].health);
-                                String team_name = ar.team.name;
-                                beach_team.setText(ar.team.name);
-                                set_team_theme(team_name, team_image, frame_layout);
-                            } else {
-                                Log.d("RocketBeach", "Cannot attack");
-                            }
-//                            uv_index.setText(String.valueOf(beach[0].uv_index.value));
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<AttackResponse> call, Throwable t) {
-                        Log.e("RocketBeach",t.toString());
-                    }
-                });
+                enable_attack = !enable_attack;
+                if(enable_attack){
+                    attack_button.setText("Stop Attacking");
+                }else{
+                    attack_button.setText("Attack");
+                }
             }
         });
         findViewById(R.id.attack_button).setOnTouchListener(mDelayHideTouchListener);
+    }
+
+    private void attackBeach(){
+        if(!enable_attack) return;
+        final TextView beach_name = (TextView) findViewById(R.id.beach_name);
+        final TextView beach_health = (TextView) findViewById(R.id.beach_health);
+        final TextView beach_team = (TextView) findViewById(R.id.beach_team);
+        final TextView uv_index = (TextView) findViewById(R.id.uv_index);
+        final TextView potential_xp = (TextView) findViewById(R.id.potential_xp);
+        final TextView user_health = (TextView) findViewById(R.id.player_health);
+        final ImageView team_image = (ImageView) findViewById(R.id.team_image);
+        final FrameLayout frame_layout = (FrameLayout) findViewById(R.id.show_beach_frame);
+        token = getSharedPreferences("RocketBeach", 0).getString("X-Auth-Token", "7e977b10c81d4b7581a2a106b9fb84dc");
+
+        final Beach[] beach={null};
+        final Map<String, String> options = new HashMap<>();
+        locationAndContactsTask();
+        //TODO : remove hardcoded location
+        Log.e("Location", String.valueOf(latitute));
+        Log.e("Location", String.valueOf(longitude));
+        latitute = 40.7;
+        longitude = -74.2;
+        options.put("lat", String.valueOf(latitute));
+        options.put("long", String.valueOf(longitude));
+        rocket.attack("1", token, options).enqueue(new Callback<AttackResponse>() {
+            @Override
+            public void onResponse(Call<AttackResponse> call, Response<AttackResponse> response) {
+                if (response.code() == 200) {
+                    AttackResponse ar = response.body();
+                    ar.validate_team();
+                    if (ar.status) {
+                        updateBeachStats(ar.beach);
+                        String team_name = ar.team.name;
+                        beach_team.setText(ar.team.name);
+                        set_team_theme(team_name, team_image, frame_layout);
+                    } else {
+                        Log.d("RocketBeach", "Cannot attack");
+                    }
+//                            uv_index.setText(String.valueOf(beach[0].uv_index.value));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AttackResponse> call, Throwable t) {
+                Log.e("RocketBeach",t.toString());
+            }
+        });
+    }
+
+    private void updateBeachStats(Beach beach){
+        final TextView beach_name = (TextView) findViewById(R.id.beach_name);
+        final TextView beach_health = (TextView) findViewById(R.id.beach_health);
+        final TextView beach_team = (TextView) findViewById(R.id.beach_team);
+        final TextView uv_index = (TextView) findViewById(R.id.uv_index);
+        final TextView potential_xp = (TextView) findViewById(R.id.potential_xp);
+        final TextView user_health = (TextView) findViewById(R.id.player_health);
+        final ImageView team_image = (ImageView) findViewById(R.id.team_image);
+        final FrameLayout frame_layout = (FrameLayout) findViewById(R.id.show_beach_frame);
+        beach_name.setText(beach.name);
+        beach_health.setText(beach.health);
+        uv_index.setText(String.valueOf(beach.uv_index.value));
+        updateWarnings(beach.uv_index.value);
+    }
+
+    private void updateWarnings(double uv_index){
+        final TextView warnings = (TextView)findViewById(R.id.warnings);
+        if(uv_index < 4)
+            warnings.setText("Beach is safe with low exposure to UV radiation");
+        else if(uv_index >= 4 && uv_index < 8){
+            warnings.setText("Consider applying some sunscreen, UV Radiations are moderate");
+        }else{
+            warnings.setText("You are killing yourself in this level of UV radiation");
+        }
     }
 
     private void updateUserHealth(){
@@ -272,11 +321,13 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         rocket.updateHealth(token, options).enqueue(new Callback<UpdateHealthResponse>() {
             @Override
             public void onResponse(Call<UpdateHealthResponse> call, Response<UpdateHealthResponse> response) {
-                UpdateHealthResponse uhr = response.body();
-                user_health.setText(uhr.health);
-                boolean alive = uhr.user_alive;
-                if (!alive)
-                    Toast.makeText(getApplicationContext(), "You are dead and can no longer conquer beaches", Toast.LENGTH_LONG).show();
+                if (response.code() == 200){
+                    UpdateHealthResponse uhr = response.body();
+                    user_health.setText(uhr.health);
+                    boolean alive = uhr.user_alive;
+                    if (!alive)
+                        Toast.makeText(getApplicationContext(), "You are dead and can no longer conquer beaches", Toast.LENGTH_LONG).show();
+                }
             }
 
             @Override

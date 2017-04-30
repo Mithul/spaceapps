@@ -149,6 +149,14 @@
                 android:textSize="20sp"
                 android:textStyle="bold" />
         </LinearLayout>
+        <TextView
+            android:id="@+id/warnings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:keepScreenOn="true"
+            android:textColor="#fff"
+            android:textSize="20sp"
+            android:textStyle="bold" />
         <ImageView
             android:id="@+id/team_image"
             android:layout_width="wrap_content"

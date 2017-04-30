@@ -35,7 +35,9 @@ class UserController < ApplicationController
     current_user.health = 100.0 if current_user.health.nil?
     hab = Hab.where("name like ?","%#{beach.name}%").first
     if hab.nil?
-      depth=0
+      hab = Hab.new
+      hab.depth=0
+      depth = 0
     else
       depth = hab.depth
     end

@@ -24,7 +24,7 @@ class BeachesController < ApplicationController
       beach.health = 0.0 if beach.health.nil?
       beach.team = current_user.team if !beach.team_id
       Rails.logger.debug(current_user.to_json)
-      if !current_user.team.nil?
+      if !current_user.team.nil? or current_user and !current_user.is_alive?
         if beach.team == current_user.team 
           beach.health = beach.health + 1
         else

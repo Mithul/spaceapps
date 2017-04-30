@@ -7,6 +7,10 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :trackable, :validatable
   before_create :set_auth_token
 
+  def is_alive?
+    self.health <= 0
+  end
+
   def ensure_authentication_token!
     self.auth_token = set_auth_token if !auth_token.present?
   end
