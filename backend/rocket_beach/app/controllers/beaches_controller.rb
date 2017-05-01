@@ -92,7 +92,8 @@ class BeachesController < ApplicationController
   # GET /beaches/1
   # GET /beaches/1.json
   def show
-    @point = [params[:lat], param[:long]] if params[:lat] and params[:long]
+    @point = [params[:lat].to_f, params[:long].to_f] if params[:lat] and params[:long]
+    Rails.logger.debug(@point)
   end
 
   # GET /beaches/new
