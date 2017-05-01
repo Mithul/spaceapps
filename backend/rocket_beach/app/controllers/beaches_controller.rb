@@ -92,6 +92,7 @@ class BeachesController < ApplicationController
   # GET /beaches/1
   # GET /beaches/1.json
   def show
+    @point = [params[:lat], param[:long]] if params[:lat] and params[:long]
   end
 
   # GET /beaches/new
