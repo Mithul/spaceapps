@@ -17,7 +17,7 @@ interface RocketBeach {
     Call<List<Beach>> listBeaches(@QueryMap Map<String, String> queries, @Header("X-Auth-Token") String auth);
 
     @GET("beaches/{beach_id}.json")
-    Call<Beach> getBeachInfo(@Path(value = "beach_id", encoded = true) String beachId, @Header("X-Auth-Token") String auth);
+    Call<Beach> getBeachInfo(@Path(value = "beach_id", encoded = true) String beachId, @Header("X-Auth-Token") String auth, @QueryMap Map<String, String> queries);
 
     @GET("attack")
     Call<AttackResponse> attack(@Header("X-Auth-Token") String auth, @QueryMap Map<String, String> queries);

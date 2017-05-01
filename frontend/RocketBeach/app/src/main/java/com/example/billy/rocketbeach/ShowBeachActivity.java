@@ -171,7 +171,14 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         }else{
             beach_id = "1";
         }
-        rocket.getBeachInfo(beach_id, token).enqueue(new Callback<Beach>() {
+        final Map<String, String> options = new HashMap<>();
+        locationAndContactsTask();
+        //TODO : remove hardcoded location
+        Log.e("Location", String.valueOf(latitute));
+        Log.e("Location", String.valueOf(longitude));
+        options.put("lat", String.valueOf(latitute));
+        options.put("long", String.valueOf(longitude));
+        rocket.getBeachInfo(beach_id, token, options).enqueue(new Callback<Beach>() {
             @Override
             public void onResponse(Call<Beach> call, Response<Beach> response) {
                 if (response.code() == 200) {
@@ -245,8 +252,6 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         //TODO : remove hardcoded location
         Log.e("Location", String.valueOf(latitute));
         Log.e("Location", String.valueOf(longitude));
-        latitute = 40.7;
-        longitude = -74.2;
         options.put("lat", String.valueOf(latitute));
         options.put("long", String.valueOf(longitude));
         rocket.attack(beach_id, token, options).enqueue(new Callback<AttackResponse>() {
@@ -277,11 +282,13 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         final TextView beach_name = (TextView) findViewById(R.id.beach_name);
         final TextView beach_health = (TextView) findViewById(R.id.beach_health);
         final TextView uv_index = (TextView) findViewById(R.id.uv_index);
+        final TextView distance = (TextView) findViewById(R.id.distance);
         final TextView potential_xp = (TextView) findViewById(R.id.potential_xp);
         beach_name.setText(beach.name);
         beach_health.setText(String.valueOf(beach.get_health()));
         uv_index.setText(String.valueOf(beach.get_uv_value()));
         potential_xp.setText(String.valueOf(beach.potential_xp));
+        distance.setText(String.valueOf(beach.get_distance()));
         beach.validate_team();
 //        potential_xp.setText(beach.current_xp);
         updateWarnings(beach.get_uv_value());
@@ -314,8 +321,8 @@ public class ShowBeachActivity extends AppCompatActivity implements GoogleApiCli
         //TODO : remove hardcoded location
         Log.e("Location", String.valueOf(latitute));
         Log.e("Location", String.valueOf(longitude));
-        latitute = 40.7;
-        longitude = -74.2;
+//        latitute = 40.7;
+//        longitude = -74.2;
         options.put("lat", String.valueOf(latitute));
         options.put("long", String.valueOf(longitude));
         final String token = getSharedPreferences("RocketBeach", 0).getString("X-Auth-Token", "7e977b10c81d4b7581a2a106b9fb84dc");

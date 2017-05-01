@@ -9,12 +9,21 @@ class Beach {
     public Team team;
     public UVResponse uv_index;
     public double potential_xp;
+    public String distance;
 
     public double get_uv_value(){
         if(uv_index!=null)
             return Math.round(uv_index.value);
         else
             return 0;
+    }
+
+    public double get_distance(){
+        if(distance != null) {
+            return Math.round(Float.parseFloat(distance));
+        }else{
+            return 999;
+        }
     }
 
     public double get_health(){
